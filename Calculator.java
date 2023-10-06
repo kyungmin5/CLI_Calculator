@@ -63,7 +63,14 @@ public class Calculator {
     }
 
     private static boolean isOperator(char c) {
-        return c == '+' || c == '-' || c == '*' || c == '/';
+        try {
+            OperatorType.fromString(Character.toString(c));
+        } catch (ErrorHandler e) {
+            e.PrintError();
+            return false;
+        }
+        return true;
+        // return c == '+' || c == '-' || c == '*' || c == '/';
     }
 
     private static int precedence(char operator) {
