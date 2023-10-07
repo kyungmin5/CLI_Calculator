@@ -13,16 +13,16 @@ public class Calculator {
                 continue; // 공백 문자는 무시
             }
 
-            if (Character.isDigit(currentChar)) {
+            if (Character.isDigit(currentChar) || currentChar == '.') {
                 // 숫자를 추출하여 스택에 저장
                 StringBuilder numBuilder = new StringBuilder();
-                while (i < expression.length() && Character.isDigit(expression.charAt(i))) {
+                while (i < expression.length() && (Character.isDigit(expression.charAt(i)) || expression.charAt(i) == '.')) {
                     numBuilder.append(expression.charAt(i));
                     i++;
                 }
-                i--; // 숫자 추출 후 인덱스 조정
                 double num = Double.parseDouble(numBuilder.toString());
                 numbers.push(num);
+                i--;    //숫자 추출 후 인덱스 복원
             } else if (currentChar == '(') {
                 // 여는 괄호는 항상 스택에 push
                 operators.push(currentChar);
