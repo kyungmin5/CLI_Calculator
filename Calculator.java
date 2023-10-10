@@ -1,7 +1,9 @@
 import java.util.Stack;
-// import java.util.Scanner;
 
 public class Calculator {
+    // 전역 변수로 직전값을 저장할 변수를 선언하고 초기값을 0으로 설정
+    private static int previousValue = 0;
+
     public static int calculate(String expression) throws ErrorHandler {
         Stack<Integer> numbers = new Stack<>();
         Stack<Character> operators = new Stack<>();
@@ -23,6 +25,8 @@ public class Calculator {
                 i--; // 숫자 추출 후 인덱스 조정
                 int num = Integer.parseInt(numBuilder.toString());
                 numbers.push(num);
+                // 직전값 업데이트
+                previousValue = num;
             } else if (currentChar == '(') {
                 // 여는 괄호는 항상 스택에 push
                 operators.push(currentChar);
@@ -34,6 +38,8 @@ public class Calculator {
                     char operator = operators.pop();
                     int result = performOperation(a, b, operator);
                     numbers.push(result);
+                    // 직전값 업데이트
+                    previousValue = result;
                 }
                 operators.pop(); // 여는 괄호 제거
             } else if (isOperator(currentChar)) {
@@ -44,8 +50,13 @@ public class Calculator {
                     char operator = operators.pop();
                     int result = performOperation(a, b, operator);
                     numbers.push(result);
+                    // 직전값 업데이트
+                    previousValue = result;
                 }
                 operators.push(currentChar);
+            } else if (currentChar == '_') {
+                // '_'를 만날 때 직전값을 스택에 push
+                numbers.push(previousValue);
             }
         }
 
@@ -56,6 +67,8 @@ public class Calculator {
             char operator = operators.pop();
             int result = performOperation(a, b, operator);
             numbers.push(result);
+            // 직전값 업데이트
+            previousValue = result;
         }
 
         // 최종 결과 반환
@@ -96,8 +109,7 @@ public class Calculator {
                 }
                 return a / b;
             default:
-            throw new ErrorHandler(ErrorType.ResultValueOutofBound_error);
+                throw new ErrorHandler(ErrorType.ResultValueOutofBound_error);
         }
     }
-
 }
