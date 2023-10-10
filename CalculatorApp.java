@@ -1,5 +1,5 @@
 import java.util.Scanner;
-
+import java.text.DecimalFormat
 public class CalculatorApp {
     public static void main(String[] args) {
         StaticVariable staticVariable = new StaticVariable();
@@ -39,8 +39,13 @@ public class CalculatorApp {
 
         while(!expression.equalsIgnoreCase("q")) {
             try {
+                DecimalFormat df = new DecimalFormat("#.######");
                 double result = Calculator.calculate(expression);
-                System.out.println("결과: " + result);
+                if(result == (int) result){
+                    System.out.println("결과 : " + (int)result);
+                }else{
+                    System.out.println("결과 : "+ df.format(result));
+                }
                 System.out.print("계산할 수식을 입력하세요: ");
                 expression = scanner.nextLine();
                 System.out.println();

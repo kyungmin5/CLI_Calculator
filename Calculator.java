@@ -2,8 +2,8 @@ import java.util.Stack;
 // import java.util.Scanner;
 
 public class Calculator {
-    public static int calculate(String expression) throws ErrorHandler {
-        Stack<Integer> numbers = new Stack<>();
+    public static double calculate(String expression) throws ErrorHandler {
+        Stack<Double> numbers = new Stack<>();
         Stack<Character> operators = new Stack<>();
 
         for (int i = 0; i < expression.length(); i++) {
@@ -13,36 +13,36 @@ public class Calculator {
                 continue; // 공백 문자는 무시
             }
 
-            if (Character.isDigit(currentChar)) {
+            if (Character.isDigit(currentChar) || currentChar == '.') {
                 // 숫자를 추출하여 스택에 저장
                 StringBuilder numBuilder = new StringBuilder();
-                while (i < expression.length() && Character.isDigit(expression.charAt(i))) {
+                while (i < expression.length() && (Character.isDigit(expression.charAt(i)) || expression.charAt(i) == '.')) {
                     numBuilder.append(expression.charAt(i));
                     i++;
                 }
-                i--; // 숫자 추출 후 인덱스 조정
-                int num = Integer.parseInt(numBuilder.toString());
+                double num = Double.parseDouble(numBuilder.toString());
                 numbers.push(num);
+                i--;    //숫자 추출 후 인덱스 복원
             } else if (currentChar == '(') {
                 // 여는 괄호는 항상 스택에 push
                 operators.push(currentChar);
             } else if (currentChar == ')') {
                 // 닫는 괄호를 만날 때까지 연산자를 pop하고 계산
                 while (!operators.isEmpty() && operators.peek() != '(') {
-                    int b = numbers.pop();
-                    int a = numbers.pop();
+                    double b = numbers.pop();
+                    double a = numbers.pop();
                     char operator = operators.pop();
-                    int result = performOperation(a, b, operator);
+                    double result = performOperation(a, b, operator);
                     numbers.push(result);
                 }
                 operators.pop(); // 여는 괄호 제거
             } else if (isOperator(currentChar)) {
                 // 연산자 우선순위를 고려하여 스택에 push
                 while (!operators.isEmpty() && precedence(operators.peek()) >= precedence(currentChar)) {
-                    int b = numbers.pop();
-                    int a = numbers.pop();
+                    double b = numbers.pop();
+                    double a = numbers.pop();
                     char operator = operators.pop();
-                    int result = performOperation(a, b, operator);
+                    double result = performOperation(a, b, operator);
                     numbers.push(result);
                 }
                 operators.push(currentChar);
@@ -51,10 +51,10 @@ public class Calculator {
 
         // 남은 연산자를 모두 처리
         while (!operators.isEmpty()) {
-            int b = numbers.pop();
-            int a = numbers.pop();
+            double b = numbers.pop();
+            double a = numbers.pop();
             char operator = operators.pop();
-            int result = performOperation(a, b, operator);
+            double result = performOperation(a, b, operator);
             numbers.push(result);
         }
 
@@ -82,7 +82,7 @@ public class Calculator {
         return 0; // 다른 문자의 경우
     }
 
-    private static int performOperation(int a, int b, char operator) throws ErrorHandler {
+    private static double performOperation(double a, double b, char operator) throws ErrorHandler {
         switch (operator) {
             case '+':
                 return a + b;
