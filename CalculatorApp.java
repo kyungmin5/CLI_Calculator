@@ -1,5 +1,5 @@
 import java.util.Scanner;
-import java.text.DecimalFormat
+import java.text.DecimalFormat;
 public class CalculatorApp {
     public static void main(String[] args) {
         StaticVariable staticVariable = new StaticVariable();
@@ -51,6 +51,9 @@ public class CalculatorApp {
                 System.out.println();
             } catch (ErrorHandler e) {
                 e.PrintError();
+                System.out.print("계산할 수식을 입력하세요: ");
+                expression = scanner.nextLine();
+                System.out.println();
             }
         }   
         scanner.close();
