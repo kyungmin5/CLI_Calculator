@@ -139,8 +139,57 @@ public class Calculator {
         // operand로 할 지 operator 로 할지 정할 수 없어거 그냥 수식 오류로 보냈습니다
         if(!checkValidExpression(expression)) throw new ErrorHandler(ErrorType.InValidExperssion_error);
 
-
+        expression = optimizeForPower(expression);
         return new Object[] {expression, isSubstitution};
+    }
+
+    private static String optimizeForPower(String expression)
+    {
+        System.out.println(expression);
+
+        StringBuilder sb = new StringBuilder(expression);
+
+        for (int i = sb.length() - 1; i >= 0; i--) {
+            if (sb.charAt(i) == '^') {
+                int end = i + 1;
+
+                // 오른쪽 피연산자를 찾아서 ')'를 추가합니다.
+                if (sb.charAt(end) == '(') {
+                    int openParensCount = 1;
+                    while (end < sb.length() && openParensCount != 0) {
+                        end++;
+                        if (sb.charAt(end) == '(') openParensCount++;
+                        if (sb.charAt(end) == ')') openParensCount--;
+                    }
+                    end++;  // 닫는 괄호 다음 위치로 이동
+                } else {
+                    while (end < sb.length() && Character.isDigit(sb.charAt(end))) {
+                        end++;
+                    }
+                }
+                sb.insert(end, ")");
+
+                // 왼쪽 피연산자를 찾아서 '('를 추가합니다.
+                int start = i - 1;
+                if (sb.charAt(start) == ')') {
+                    int closeParensCount = 1;
+                    while (start >= 0 && closeParensCount != 0) {
+                        start--;
+                        if (sb.charAt(start) == '(') closeParensCount--;
+                        if (sb.charAt(start) == ')') closeParensCount++;
+                    }
+                } else {
+                    while (start >= 0 && Character.isDigit(sb.charAt(start))) {
+                        start--;
+                    }
+                }
+                sb.insert(start + 1, "(");
+                i = start + 1;  // '(' 위치 다음으로 이동
+            }
+        }
+
+        System.out.println(sb);
+        return sb.toString();
     }
 
     private static boolean checksubstitution(String expression)
