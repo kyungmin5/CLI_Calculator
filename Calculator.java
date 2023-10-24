@@ -130,6 +130,7 @@ public class Calculator {
             }
 
             expression = expression.substring(index+1);
+            expression = expression.trim();
         }   
 
         if(!checkBracket(expression)) throw new ErrorHandler(ErrorType.Bracket_error);
@@ -214,6 +215,51 @@ public class Calculator {
     {   // 여기까지왔다는 것은, 모든 문자는 수식 내에 존재 가능하고 괄호 쌍까지 알 맞다는 것이다
         // 이제 연산자 / 피연산자의 선후 순서가 맞는지를 봐야 한다
         if(expression.length() == 0) return false;
+
+        Stack<String> OpeStack = new Stack<>();
+        Stack<Character> BracketStack = new Stack<>();
+        for(int i=0; i< expression.length(); i++)
+        {
+            if(expression.charAt(i) == '+' || expression.charAt(i) == '-' 
+                ||expression.charAt(i) == '*' ||expression.charAt(i) == '/' 
+                ||expression.charAt(i) == '^')
+                {
+                    if(OpeStack.empty() || OpeStack.peek() == "Operator") return false;
+                    OpeStack.push("Operator");
+                }else if(expression.charAt(i) >= '0' && expression.charAt(i) <= '9')
+                {
+                    if(!OpeStack.empty() && OpeStack.peek() == "Operand")
+                    {
+                        if(expression.charAt(i-1) >= '0' && expression.charAt(i-1) <= '9')
+                        {
+                            // 이 경우는 바로 앞에 붙어 있는 경우이므로 앞까지 포함해서 하나의 operand 로 쳐도 ok
+                        }else 
+                        // 띄어쓰기든, 괄호가 막고 있던, 스택에 operand가 들어간 후에 또 다시 operand가 나오면 오류
+                        {
+                            return false;
+                        }
+                    }
+                    OpeStack.push("Operand");
+                }
+
+                if(expression.charAt(i) == ')') // 이 부분이 괄호 안에 아무것도 없으면 에러 내는 곳
+                {
+                    while(BracketStack.peek() == ' ')
+                    {
+                        BracketStack.pop();
+                    }
+
+                    if(BracketStack.peek() == '(')
+                    {
+                        return false;
+                    }
+                }
+
+                BracketStack.push(expression.charAt(i));
+        }
+
+        if(!OpeStack.empty() && OpeStack.peek() == "Operator") return false; // 이 경우가 마지막이 operator로 끝나는 경우이다
+
         return true;
     }
 
