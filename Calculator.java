@@ -152,7 +152,7 @@ public class Calculator {
         for (int i = sb.length() - 1; i >= 0; i--) {
             if (sb.charAt(i) == '^') {
                 int end = i + 1;
-
+    
                 // 오른쪽 피연산자를 찾아서 ')'를 추가합니다.
                 if (sb.charAt(end) == '(') {
                     int openParensCount = 1;
@@ -163,12 +163,12 @@ public class Calculator {
                     }
                     end++;  // 닫는 괄호 다음 위치로 이동
                 } else {
-                    while (end < sb.length() && Character.isDigit(sb.charAt(end))) {
+                    while (end < sb.length() && (Character.isDigit(sb.charAt(end)) || sb.charAt(end) == '.')) {
                         end++;
                     }
                 }
                 sb.insert(end, ")");
-
+    
                 // 왼쪽 피연산자를 찾아서 '('를 추가합니다.
                 int start = i - 1;
                 if (sb.charAt(start) == ')') {
@@ -179,7 +179,7 @@ public class Calculator {
                         if (sb.charAt(start) == ')') closeParensCount++;
                     }
                 } else {
-                    while (start >= 0 && Character.isDigit(sb.charAt(start))) {
+                    while (start >= 0 && (Character.isDigit(sb.charAt(start)) || sb.charAt(start) == '.')) {
                         start--;
                     }
                 }
@@ -249,6 +249,10 @@ public class Calculator {
             }else if(expression.charAt(i) == 'x' && i>0 && expression.charAt(i-1) == '&')
             {
                 continue;
+            }else if(expression.charAt(i) == '.' && i>0 && (i+1) < expression.length() && 
+                expression.charAt(i-1) >= '0' && expression.charAt(i-1) <= '9' && expression.charAt(i+1) >= '0' && expression.charAt(i+1) <= '9')
+            {
+                continue;
             }else
             {
                 return false;
@@ -263,6 +267,7 @@ public class Calculator {
     private static boolean checkValidExpression(String expression)
     {   // 여기까지왔다는 것은, 모든 문자는 수식 내에 존재 가능하고 괄호 쌍까지 알 맞다는 것이다
         // 이제 연산자 / 피연산자의 선후 순서가 맞는지를 봐야 한다
+
         if(expression.length() == 0) return false;
 
         Stack<String> OpeStack = new Stack<>();
@@ -271,11 +276,11 @@ public class Calculator {
         {
             if(expression.charAt(i) == '+' || expression.charAt(i) == '-' 
                 ||expression.charAt(i) == '*' ||expression.charAt(i) == '/' 
-                ||expression.charAt(i) == '^')
+                ||expression.charAt(i) == '^' || expression.charAt(i) == '.')
                 {
                     if(OpeStack.empty() || OpeStack.peek() == "Operator") return false;
                     OpeStack.push("Operator");
-                }else if(expression.charAt(i) >= '0' && expression.charAt(i) <= '9')
+                }else if(expression.charAt(i) >= '0' && expression.charAt(i) <= '9' || expression.charAt(i) == '_')
                 {
                     if(!OpeStack.empty() && OpeStack.peek() == "Operand")
                     {
@@ -306,6 +311,7 @@ public class Calculator {
 
                 BracketStack.push(expression.charAt(i));
         }
+
 
         if(!OpeStack.empty() && OpeStack.peek() == "Operator") return false; // 이 경우가 마지막이 operator로 끝나는 경우이다
 
