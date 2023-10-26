@@ -134,9 +134,6 @@ public class Calculator {
 
         if(!checkBracket(expression)) throw new ErrorHandler(ErrorType.Bracket_error);
         if(!check_Operand_Operator_Char(expression)) throw new ErrorHandler(ErrorType.InValidExperssion_error);
-        // 본래, operand operator  분리해서 오류를 보내고 싶었지만 $같은 문자가 수식에 있으면 
-        // operand로 할 지 operator 로 할지 정할 수 없어거 그냥 수식 오류로 보냈습니다
-        if(!checkValidExpression(expression)) throw new ErrorHandler(ErrorType.InValidExperssion_error);
 
         expression = optimizeForPower(expression);
 
@@ -152,7 +149,12 @@ public class Calculator {
         for (int i = sb.length() - 1; i >= 0; i--) {
             if (sb.charAt(i) == '^') {
                 int end = i + 1;
-    
+
+                // ^ 뒤의 공백 무시
+                while (end < sb.length() && sb.charAt(end) == ' ') {
+                    end++;
+                }
+
                 // 오른쪽 피연산자를 찾아서 ')'를 추가합니다.
                 if (sb.charAt(end) == '(') {
                     int openParensCount = 1;
@@ -163,14 +165,19 @@ public class Calculator {
                     }
                     end++;  // 닫는 괄호 다음 위치로 이동
                 } else {
-                    while (end < sb.length() && (Character.isDigit(sb.charAt(end)) || sb.charAt(end) == '.')) {
+                    while (end < sb.length() && (Character.isDigit(sb.charAt(end)) || sb.charAt(end) == '.' || sb.charAt(end) == ' ')) {
                         end++;
                     }
                 }
                 sb.insert(end, ")");
-    
-                // 왼쪽 피연산자를 찾아서 '('를 추가합니다.
+
+                // ^ 앞의 공백 무시
                 int start = i - 1;
+                while (start >= 0 && sb.charAt(start) == ' ') {
+                    start--;
+                }
+
+                // 왼쪽 피연산자를 찾아서 '('를 추가합니다.
                 if (sb.charAt(start) == ')') {
                     int closeParensCount = 1;
                     while (start >= 0 && closeParensCount != 0) {
@@ -179,7 +186,7 @@ public class Calculator {
                         if (sb.charAt(start) == ')') closeParensCount++;
                     }
                 } else {
-                    while (start >= 0 && (Character.isDigit(sb.charAt(start)) || sb.charAt(start) == '.')) {
+                    while (start >= 0 && (Character.isDigit(sb.charAt(start)) || sb.charAt(start) == '.' || sb.charAt(start) == ' ')) {
                         start--;
                     }
                 }
@@ -261,61 +268,4 @@ public class Calculator {
 
         return true;
     }
-
-
-    private static boolean checkValidExpression(String expression)
-    {   // 여기까지왔다는 것은, 모든 문자는 수식 내에 존재 가능하고 괄호 쌍까지 알 맞다는 것이다
-        // 이제 연산자 / 피연산자의 선후 순서가 맞는지를 봐야 한다
-
-        if(expression.length() == 0) return false;
-
-        Stack<String> OpeStack = new Stack<>();
-        Stack<Character> BracketStack = new Stack<>();
-        for(int i=0; i< expression.length(); i++)
-        {
-            if(expression.charAt(i) == '+' || expression.charAt(i) == '-' 
-                ||expression.charAt(i) == '*' ||expression.charAt(i) == '/' 
-                ||expression.charAt(i) == '^' || expression.charAt(i) == '.')
-                {
-                    if(!OpeStack.empty() && OpeStack.peek() == "Operator") return false;
-
-                    OpeStack.push("Operator");
-                }else if(expression.charAt(i) >= '0' && expression.charAt(i) <= '9' || expression.charAt(i) == '_')
-                {
-                    if(!OpeStack.empty() && OpeStack.peek() == "Operand")
-                    {
-                        if(expression.charAt(i-1) >= '0' && expression.charAt(i-1) <= '9')
-                        {
-                            // 이 경우는 바로 앞에 붙어 있는 경우이므로 앞까지 포함해서 하나의 operand 로 쳐도 ok
-                        }else 
-                        // 띄어쓰기든, 괄호가 막고 있던, 스택에 operand가 들어간 후에 또 다시 operand가 나오면 오류
-                        {
-                            return false;
-                        }
-                    }
-                    OpeStack.push("Operand");
-                }
-
-                if(expression.charAt(i) == ')') // 이 부분이 괄호 안에 아무것도 없으면 에러 내는 곳
-                {
-                    while(BracketStack.peek() == ' ')
-                    {
-                        BracketStack.pop();
-                    }
-
-                    if(BracketStack.peek() == '(')
-                    {
-                        return false;
-                    }
-                }
-
-                BracketStack.push(expression.charAt(i));
-        }
-
-
-        if(!OpeStack.empty() && OpeStack.peek() == "Operator") return false; // 이 경우가 마지막이 operator로 끝나는 경우이다
-
-        return true;
-    }
-
 }
