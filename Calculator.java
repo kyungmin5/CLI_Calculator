@@ -78,7 +78,6 @@ public class Calculator {
             return false;
         }
         return true;
-        // return c == '+' || c == '-' || c == '*' || c == '/';
     }
 
     private static int precedence(char operator) {
@@ -140,6 +139,7 @@ public class Calculator {
         if(!checkValidExpression(expression)) throw new ErrorHandler(ErrorType.InValidExperssion_error);
 
         expression = optimizeForPower(expression);
+
         return new Object[] {expression, isSubstitution};
     }
 
@@ -194,10 +194,9 @@ public class Calculator {
 
     private static boolean checksubstitution(String expression)
     {
-        String checkStr = "&x=";
-        expression = expression.replace(" ", "");
+        String checkStr = "$x = ";
 
-        if(expression.length() >= 3 && expression.substring(0, 3) == checkStr) return true;
+        if(expression.length() >= 5 && expression.substring(0, 5).equals(checkStr)) return true;
         
         return false;
     }
@@ -278,7 +277,8 @@ public class Calculator {
                 ||expression.charAt(i) == '*' ||expression.charAt(i) == '/' 
                 ||expression.charAt(i) == '^' || expression.charAt(i) == '.')
                 {
-                    if(OpeStack.empty() || OpeStack.peek() == "Operator") return false;
+                    if(!OpeStack.empty() && OpeStack.peek() == "Operator") return false;
+
                     OpeStack.push("Operator");
                 }else if(expression.charAt(i) >= '0' && expression.charAt(i) <= '9' || expression.charAt(i) == '_')
                 {
