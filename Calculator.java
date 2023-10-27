@@ -8,11 +8,30 @@ public class Calculator {
 
         boolean isSubstitution =(boolean)RESULT[1]; // 대입식인지 그냥 수식인지를 판별
         expression = (String)RESULT[0]; // 수식이면 수식이 ^에 대해 () 처리만 하고 나오고, 대입이라면 = 오른쪽 부분만이 ^처리 후에 나오게 된다
-        // 결국, 수식이면 계산 한 값을 반환하면 되는 것이고, 대입이라면 계산 한 값을 x에 대입하면 되는 것이다다
+        // 결국, 수식이면 계산 한 값을 반환하면 되는 것이고, 대입이라면 계산 한 값을 x에 대입하면 되는 것이다
 
+        double result = RecursiveCaluculate(expression);
 
+        if(isSubstitution)
+        {
+            // x에 대입하는 식
+        }
+           
+        return result;
+        
+    }
+
+    private static double RecursiveCaluculate(String expression) throws ErrorHandler
+    {
+        // 받는 문자열은 (로 시작해서 )로 끝나거나, 아니면 괄호가 아예 없습니다
         Stack<Double> numbers = new Stack<>();
         Stack<Character> operators = new Stack<>();
+        int stackCount = 0;
+
+        if(expression.charAt(0) == '(' && expression.charAt(expression.length()-1) == ')')
+        {
+            expression = expression.substring(1, expression.length()-1);
+        }
 
         for (int i = 0; i < expression.length(); i++) {
             char currentChar = expression.charAt(i);
@@ -32,18 +51,20 @@ public class Calculator {
                 numbers.push(num);
                 i--;    //숫자 추출 후 인덱스 복원
             } else if (currentChar == '(') {
-                // 여는 괄호는 항상 스택에 push
-                operators.push(currentChar);
-            } else if (currentChar == ')') {
-                // 닫는 괄호를 만날 때까지 연산자를 pop하고 계산
-                while (!operators.isEmpty() && operators.peek() != '(') {
-                    double b = numbers.pop();
-                    double a = numbers.pop();
-                    char operator = operators.pop();
-                    double result = performOperation(a, b, operator);
-                    numbers.push(result);
+                stackCount++;
+                int  j= i+1;
+                for (; j < expression.length() && stackCount > 0; j++)
+                {
+                    if(expression.charAt(j) == '(')
+                    {
+                        stackCount++;
+                    }else if(expression.charAt(j) == ')')
+                    {
+                        stackCount--;
+                    }
                 }
-                operators.pop(); // 여는 괄호 제거
+                numbers.push(RecursiveCaluculate(expression.substring(i, j)));
+                i = j-1;  // 여기가 실제 ) 가 있는 인덱스. i를 ) 의 index로 보내버린다.
             } else if (isOperator(currentChar)) {
                 // 연산자 우선순위를 고려하여 스택에 push
                 while (!operators.isEmpty() && precedence(operators.peek()) >= precedence(currentChar)) {
@@ -54,12 +75,12 @@ public class Calculator {
                     numbers.push(result);
                 }
                 operators.push(currentChar);
-            }
+            } 
         }
 
         // 남은 연산자를 모두 처리
         while (!operators.isEmpty()) {
-            double b = numbers.pop();
+            double b = numbers.pop();                                                                                                     
             double a = numbers.pop();
             char operator = operators.pop();
             double result = performOperation(a, b, operator);
@@ -74,6 +95,7 @@ public class Calculator {
         try {
             OperatorType.fromString(Character.toString(c));
         } catch (ErrorHandler e) {
+            System.out.println(c);
             e.PrintError();
             return false;
         }
