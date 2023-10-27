@@ -65,11 +65,13 @@ public class Calculator {
                             stackCount--;
                         }
                     }
-                    numbers.push(RecursiveCaluculate(expression.substring(i+1, j-1)));
+                    numbers.push(RecursiveCaluculate(expression.substring(i+1, j-1)) * isOperandShouldMinus);
+                    isOperandShouldMinus = 1;
                     i = j-1;  // 여기가 실제 ) 가 있는 인덱스. i를 ) 의 index로 보내버린다.
                 } else if (isOperator(currentChar)) {
                     // 연산자 우선순위를 고려하여 스택에 push
-                    if(currentChar == '-' && i+1< expression.length() && Character.isDigit(expression.charAt(i+1)))
+                    if(currentChar == '-' && i+1< expression.length() && (Character.isDigit(expression.charAt(i+1)) || expression.charAt(i+1) == '(' 
+                      || expression.charAt(i+1) == '_' || expression.charAt(i+1) == '&'))
                     {   // 이게 딱 음수부호 피연산자의 형태. 이게 아니면 모두 연산자 처리한다
                         // 다만 이것이 음수부호 형태가 맞지만, 연산자가 아니라는 것은 아니므로 추가 처리가 필요하다
                         boolean isoperator = false;
