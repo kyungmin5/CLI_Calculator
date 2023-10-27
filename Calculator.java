@@ -17,6 +17,8 @@ public class Calculator {
         {
             // x에 대입하는 식
         }
+
+        // 직전 값에 대입하는 식
            
         return result;
         
@@ -24,17 +26,12 @@ public class Calculator {
 
     private static double RecursiveCaluculate(String expression) throws ErrorHandler
     {
-        // 받는 문자열은 (로 시작해서 )로 끝나거나, 아니면 괄호가 아예 없습니다
         Stack<Double> numbers = new Stack<>();
         Stack<Character> operators = new Stack<>();
         int stackCount = 0;
 
         double finalResult = 0;
-
-        if(expression.charAt(0) == '(' && expression.charAt(expression.length()-1) == ')')
-        {
-            expression = expression.substring(1, expression.length()-1);
-        }
+        int isOperandShouldMinus = 1;
 
         try {
             for (int i = 0; i < expression.length(); i++) {
@@ -52,7 +49,8 @@ public class Calculator {
                         i++;
                     }
                     double num = Double.parseDouble(numBuilder.toString());
-                    numbers.push(num);
+                    numbers.push(num * isOperandShouldMinus);
+                    isOperandShouldMinus = 1;
                     i--;    //숫자 추출 후 인덱스 복원
                 } else if (currentChar == '(') {
                     stackCount++;
@@ -67,11 +65,38 @@ public class Calculator {
                             stackCount--;
                         }
                     }
-                    numbers.push(RecursiveCaluculate(expression.substring(i, j)));
+                    numbers.push(RecursiveCaluculate(expression.substring(i+1, j-1)));
                     i = j-1;  // 여기가 실제 ) 가 있는 인덱스. i를 ) 의 index로 보내버린다.
                 } else if (isOperator(currentChar)) {
                     // 연산자 우선순위를 고려하여 스택에 push
+                    if(currentChar == '-' && i+1< expression.length() && Character.isDigit(expression.charAt(i+1)))
+                    {   // 이게 딱 음수부호 피연산자의 형태. 이게 아니면 모두 연산자 처리한다
+                        // 다만 이것이 음수부호 형태가 맞지만, 연산자가 아니라는 것은 아니므로 추가 처리가 필요하다
+                        boolean isoperator = false;
+
+                        for(int index = i-1; index>=0; index--)
+                        {
+                            if(expression.charAt(index) != ' ')
+                            {
+                                if(!isOperator(expression.charAt(index)))
+                                {
+                                    isoperator = true;
+                                }
+
+                                break;
+                            }
+                        }
+
+                        if(!isoperator) // - 바로 앞에 또 연산자가 있어서 -가 부호로 사용될 수밖에 없을 떄
+                        {
+                            isOperandShouldMinus = -1; // 뒤에 push될 피연산자가 - 화 되야 한다는 표시를 남기고 다음으로 넘어간다
+                            continue;
+                        }
+                    }
+
+                    // currnetChar이 + - 이면 반드시 실행
                     while (!operators.isEmpty() && precedence(operators.peek()) >= precedence(currentChar)) {
+
                         double b = numbers.pop();
                         double a = numbers.pop();
                         char operator = operators.pop();
@@ -106,12 +131,11 @@ public class Calculator {
         try {
             OperatorType.fromString(Character.toString(c));
         } catch (ErrorHandler e) {
-            System.out.println(c);
-            e.PrintError();
             return false;
         }
         return true;
     }
+
 
     private static int precedence(char operator) {
         if (operator == '+' || operator == '-') {
