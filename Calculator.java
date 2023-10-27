@@ -1,3 +1,4 @@
+import java.util.EmptyStackException;
 import java.util.Stack;
 // import java.util.Scanner;
 
@@ -28,67 +29,77 @@ public class Calculator {
         Stack<Character> operators = new Stack<>();
         int stackCount = 0;
 
+        double finalResult = 0;
+
         if(expression.charAt(0) == '(' && expression.charAt(expression.length()-1) == ')')
         {
             expression = expression.substring(1, expression.length()-1);
         }
 
-        for (int i = 0; i < expression.length(); i++) {
-            char currentChar = expression.charAt(i);
+        try {
+            for (int i = 0; i < expression.length(); i++) {
+                char currentChar = expression.charAt(i);
 
-            if (currentChar == ' ') {
-                continue; // 공백 문자는 무시
+                if (currentChar == ' ') {
+                    continue; // 공백 문자는 무시
+                }
+
+                if (Character.isDigit(currentChar) || currentChar == '.') {
+                    // 숫자를 추출하여 스택에 저장
+                    StringBuilder numBuilder = new StringBuilder();
+                    while (i < expression.length() && (Character.isDigit(expression.charAt(i)) || expression.charAt(i) == '.')) {
+                        numBuilder.append(expression.charAt(i));
+                        i++;
+                    }
+                    double num = Double.parseDouble(numBuilder.toString());
+                    numbers.push(num);
+                    i--;    //숫자 추출 후 인덱스 복원
+                } else if (currentChar == '(') {
+                    stackCount++;
+                    int  j= i+1;
+                    for (; j < expression.length() && stackCount > 0; j++)
+                    {
+                        if(expression.charAt(j) == '(')
+                        {
+                            stackCount++;
+                        }else if(expression.charAt(j) == ')')
+                        {
+                            stackCount--;
+                        }
+                    }
+                    numbers.push(RecursiveCaluculate(expression.substring(i, j)));
+                    i = j-1;  // 여기가 실제 ) 가 있는 인덱스. i를 ) 의 index로 보내버린다.
+                } else if (isOperator(currentChar)) {
+                    // 연산자 우선순위를 고려하여 스택에 push
+                    while (!operators.isEmpty() && precedence(operators.peek()) >= precedence(currentChar)) {
+                        double b = numbers.pop();
+                        double a = numbers.pop();
+                        char operator = operators.pop();
+                        double result = performOperation(a, b, operator);
+                        numbers.push(result);
+                    }
+                    operators.push(currentChar);
+                } 
             }
 
-            if (Character.isDigit(currentChar) || currentChar == '.') {
-                // 숫자를 추출하여 스택에 저장
-                StringBuilder numBuilder = new StringBuilder();
-                while (i < expression.length() && (Character.isDigit(expression.charAt(i)) || expression.charAt(i) == '.')) {
-                    numBuilder.append(expression.charAt(i));
-                    i++;
-                }
-                double num = Double.parseDouble(numBuilder.toString());
-                numbers.push(num);
-                i--;    //숫자 추출 후 인덱스 복원
-            } else if (currentChar == '(') {
-                stackCount++;
-                int  j= i+1;
-                for (; j < expression.length() && stackCount > 0; j++)
-                {
-                    if(expression.charAt(j) == '(')
-                    {
-                        stackCount++;
-                    }else if(expression.charAt(j) == ')')
-                    {
-                        stackCount--;
-                    }
-                }
-                numbers.push(RecursiveCaluculate(expression.substring(i, j)));
-                i = j-1;  // 여기가 실제 ) 가 있는 인덱스. i를 ) 의 index로 보내버린다.
-            } else if (isOperator(currentChar)) {
-                // 연산자 우선순위를 고려하여 스택에 push
-                while (!operators.isEmpty() && precedence(operators.peek()) >= precedence(currentChar)) {
-                    double b = numbers.pop();
-                    double a = numbers.pop();
-                    char operator = operators.pop();
-                    double result = performOperation(a, b, operator);
-                    numbers.push(result);
-                }
-                operators.push(currentChar);
-            } 
-        }
+            // 남은 연산자를 모두 처리
+            while (!operators.isEmpty()) {
+                double b = numbers.pop();                                                                                                     
+                double a = numbers.pop();
+                char operator = operators.pop();
+                double result = performOperation(a, b, operator);
+                numbers.push(result);
+            }
 
-        // 남은 연산자를 모두 처리
-        while (!operators.isEmpty()) {
-            double b = numbers.pop();                                                                                                     
-            double a = numbers.pop();
-            char operator = operators.pop();
-            double result = performOperation(a, b, operator);
-            numbers.push(result);
+            finalResult = numbers.pop();
+            if(!numbers.isEmpty()) throw new ErrorHandler(ErrorType.InValidExperssion_error);
+
+        } catch (EmptyStackException e) {
+            throw new ErrorHandler(ErrorType.InValidExperssion_error);
         }
 
         // 최종 결과 반환
-        return numbers.pop();
+        return finalResult;
     }
 
     private static boolean isOperator(char c) {
