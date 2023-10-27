@@ -199,8 +199,6 @@ public class Calculator {
 
     private static String optimizeForPower(String expression)
     {
-        System.out.println(expression);
-
         StringBuilder sb = new StringBuilder(expression);
 
         for (int i = sb.length() - 1; i >= 0; i--) {
@@ -209,6 +207,13 @@ public class Calculator {
 
                 // ^ 뒤의 공백 무시
                 while (end < sb.length() && sb.charAt(end) == ' ') {
+                    end++;
+                }
+
+                // 음수인 경우 확인
+                boolean isNegative = false;
+                if (sb.charAt(end) == '-') {
+                    isNegative = true;
                     end++;
                 }
 
