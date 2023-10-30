@@ -3,25 +3,46 @@ import java.util.Stack;
 // import java.util.Scanner;
 
 public class Calculator {
+    private static double previousValue;
+    private static double xValue = Double.NaN; // 초기에는 값이 없음을 나타내기 위해 NaN 사용
+
+    public static double getXValue() {
+        return xValue;
+    }
+
+    public static void setXValue(double value) {
+        xValue = value;
+    }
     public static double calculate(String expression) throws ErrorHandler {
 
         Object[] RESULT = preProcessing(expression);
+        //expression = expression.replaceAll(" ", ""); // 입력 문자열에서 공백 제거
 
         boolean isSubstitution =(boolean)RESULT[1]; // 대입식인지 그냥 수식인지를 판별
         expression = (String)RESULT[0]; // 수식이면 수식이 ^에 대해 () 처리만 하고 나오고, 대입이라면 = 오른쪽 부분만이 ^처리 후에 나오게 된다
         // 결국, 수식이면 계산 한 값을 반환하면 되는 것이고, 대입이라면 계산 한 값을 x에 대입하면 되는 것이다
 
-        double result = RecursiveCaluculate(expression);
+        //double result = RecursiveCaluculate(expression);
 
-        if(isSubstitution)
-        {
-            // x에 대입하는 식
+        if (isSubstitution) {
+            // 대입식인 경우
+            int index = expression.indexOf('=');
+            if (index >= 0) { // index가 유효한 경우에만 처리
+                String variable = expression.substring(0, index).trim();
+                String valueExpression = expression.substring(index + 1).trim();
+                double result = RecursiveCaluculate(valueExpression);
+                setXValue(result); // x에 값을 할당
+                return getXValue(); // 대입식의 결과로 xValue를 반환
+            } else {
+                throw new ErrorHandler(ErrorType.InValidExperssion_error);
+            }
         }
 
+
         // 직전 값에 대입하는 식
-           
+        double result = RecursiveCaluculate(expression);
         return result;
-        
+
     }
 
     private static double RecursiveCaluculate(String expression) throws ErrorHandler
@@ -50,9 +71,13 @@ public class Calculator {
                     }
                     double num = Double.parseDouble(numBuilder.toString());
                     numbers.push(num * isOperandShouldMinus);
+                    // 직전값 업데이트
+                    previousValue = num * isOperandShouldMinus;
                     isOperandShouldMinus = 1;
-                    i--;    //숫자 추출 후 인덱스 복원
-                } else if (currentChar == '(') {
+                    i--;    // 숫자 추출 후 인덱스 복원
+                }
+                else if (currentChar == '(') {
+
                     stackCount++;
                     int  j= i+1;
                     for (; j < expression.length() && stackCount > 0; j++)
@@ -70,24 +95,21 @@ public class Calculator {
                     i = j-1;  // 여기가 실제 ) 가 있는 인덱스. i를 ) 의 index로 보내버린다.
                 } else if (isOperator(currentChar)) {
                     // 연산자 우선순위를 고려하여 스택에 push
-                    if(currentChar == '-' && i+1< expression.length() && (Character.isDigit(expression.charAt(i+1)) || expression.charAt(i+1) == '(' 
-                      || expression.charAt(i+1) == '_' || expression.charAt(i+1) == '&'))
-                    {   // 이게 딱 음수부호 피연산자의 형태. 이게 아니면 모두 연산자 처리한다
-                        // 다만 이것이 음수부호 형태가 맞지만, 연산자가 아니라는 것은 아니므로 추가 처리가 필요하다
-                        boolean isoperator = false;
+                    if (currentChar == '-' && i + 1 < expression.length() && (Character.isDigit(expression.charAt(i + 1)) || expression.charAt(i + 1) == '(' || expression.charAt(i + 1) == '_' || expression.charAt(i + 1) == '&')) {
+                        // 이게 딱 음수 부호 피연산자의 형태. 이게 아니면 모두 연산자 처리한다
+                        // 다만 이것이 음수 부호 형태가 맞지만, 연산자가 아니라는 것은 아니므로 추가 처리가 필요하다
+                        boolean isOperator = false;
 
-                        for(int index = i-1; index>=0; index--)
-                        {
-                            if(expression.charAt(index) != ' ')
-                            {
-                                if(!isOperator(expression.charAt(index)))
-                                {
-                                    isoperator = true;
+                        for (int index = i - 1; index >= 0; index--) {
+                            if (expression.charAt(index) != ' ') {
+                                if (!isOperator(expression.charAt(index))) {
+                                    isOperator = true;
                                 }
 
                                 break;
                             }
                         }
+
 
                         if(!isoperator) // - 바로 앞에 또 연산자가 있어서 -가 부호로 사용될 수밖에 없을 떄
                         {
@@ -95,6 +117,7 @@ public class Calculator {
                             continue;
                         }
                     }
+
 
                     // currnetChar이 + - 이면 반드시 실행
                     while (!operators.isEmpty() && precedence(operators.peek()) >= precedence(currentChar)) {
@@ -104,19 +127,33 @@ public class Calculator {
                         char operator = operators.pop();
                         double result = performOperation(a, b, operator);
                         numbers.push(result);
+
+                        // 직전값 업데이트
+                        previousValue = result;
                     }
                     operators.push(currentChar);
-                } 
+                }else if (currentChar == '_') {
+                    // 직전값이 배정되지 않았을 경우
+                    if (Double.isNaN(previousValue)) {
+                        throw new ErrorHandler(ErrorType.InValidOperand_error);
+                    }
+                    // '_'를 만날 때 직전값을 스택에 push
+                    numbers.push(previousValue);
+                }
             }
+
 
             // 남은 연산자를 모두 처리
             while (!operators.isEmpty()) {
-                double b = numbers.pop();                                                                                                     
+                double b = numbers.pop();
                 double a = numbers.pop();
                 char operator = operators.pop();
                 double result = performOperation(a, b, operator);
                 numbers.push(result);
+                // 직전값 업데이트
+                previousValue = result;
             }
+
 
             finalResult = numbers.pop();
             if(!numbers.isEmpty()) throw new ErrorHandler(ErrorType.InValidExperssion_error);
@@ -171,33 +208,42 @@ public class Calculator {
     }
 
     private static Object[] preProcessing(String expression) throws ErrorHandler
-    {   // 반환은, ^를 위한 괄호 처리가 완료된 문자열과, 식이 대입식인지 아닌지 저장하는 boolean이다.
-        if(expression.length() > 200) throw new ErrorHandler(ErrorType.Length_error);
 
-        expression = expression.trim();
+    {   // 반환은, ^를 위한 괄호 처리가 완료된 문자열과, 식이 대입식인지 아닌지 저장하는 boolean이다.
+        if (expression.length() > 200) throw new ErrorHandler(ErrorType.Length_error);
+
+        expression = expression.replaceAll(" ", ""); // 입력 문자열에서 공백 제거
 
         boolean isSubstitution = false;
 
-        if(checksubstitution(expression))
-        {
+        if (expression.startsWith("$x=")) {
             isSubstitution = true;
-            int index = 0;
-            while(expression.charAt(index) != '=')
-            {
-                index++;
+            int index = expression.indexOf('=');
+
+            if (index >= 0 && index + 1 < expression.length()) {
+                String valueStr = expression.substring(3, index).trim();
+
+                try {
+                    double xVal = Double.parseDouble(valueStr);
+                    setXValue(xVal); // $x에 값을 할당
+                    expression = expression.substring(index + 1).trim();
+                } catch (NumberFormatException e) {
+                    throw new ErrorHandler(ErrorType.InValidOperand_error);
+                }
+            } else {
+                throw new ErrorHandler(ErrorType.InValidExperssion_error);
             }
+        }
 
-            expression = expression.substring(index+1);
-            expression = expression.trim();
-        }   
 
-        if(!checkBracket(expression)) throw new ErrorHandler(ErrorType.Bracket_error);
-        if(!check_Operand_Operator_Char(expression)) throw new ErrorHandler(ErrorType.InValidExperssion_error);
+        if (!checkBracket(expression)) throw new ErrorHandler(ErrorType.Bracket_error);
+        if (!check_Operand_Operator_Char(expression)) throw new ErrorHandler(ErrorType.InValidExperssion_error);
 
         expression = optimizeForPower(expression);
 
         return new Object[] {expression, isSubstitution};
     }
+
 
     private static String optimizeForPower(String expression)
     {
@@ -265,15 +311,15 @@ public class Calculator {
 
     private static boolean checksubstitution(String expression)
     {
-        String checkStr = "$x = ";
+        String checkStr = "$x=";
 
-        if(expression.length() >= 5 && expression.substring(0, 5).equals(checkStr)) return true;
-        
+        if (expression.length() >= 5 && expression.substring(0, 3).equals(checkStr)) return true;
+
         return false;
     }
 
     private static boolean checkBracket(String expression)
-    {   
+    {
         Stack<Character> STACK = new Stack<>();
 
         for(int i=0; i< expression.length(); i++)
@@ -296,15 +342,19 @@ public class Calculator {
         {
             return false;
         }
+
+        System.out.println(sb);
+        return sb.toString();
     }
 
+
     private static boolean check_Operand_Operator_Char(String expression)
-    {   
+    {
         for(int i=0; i< expression.length(); i++)
         {
-            if(expression.charAt(i) == '+' || expression.charAt(i) == '-' 
-                ||expression.charAt(i) == '*' ||expression.charAt(i) == '/' 
-                ||expression.charAt(i) == '^' ||expression.charAt(i) == '(' ||expression.charAt(i) == ')' )
+            if(expression.charAt(i) == '+' || expression.charAt(i) == '-'
+                    ||expression.charAt(i) == '*' ||expression.charAt(i) == '/'
+                    ||expression.charAt(i) == '^' ||expression.charAt(i) == '(' ||expression.charAt(i) == ')' )
             {
                 continue;
             }else if(expression.charAt(i) >= '0' && expression.charAt(i) <= '9')
@@ -319,15 +369,16 @@ public class Calculator {
             }else if(expression.charAt(i) == 'x' && i>0 && expression.charAt(i-1) == '&')
             {
                 continue;
-            }else if(expression.charAt(i) == '.' && i>0 && (i+1) < expression.length() && 
-                expression.charAt(i-1) >= '0' && expression.charAt(i-1) <= '9' && expression.charAt(i+1) >= '0' && expression.charAt(i+1) <= '9')
+            }else if(expression.charAt(i) == '.' && i>0 && (i+1) < expression.length() &&
+                    expression.charAt(i-1) >= '0' && expression.charAt(i-1) <= '9' && expression.charAt(i+1) >= '0' && expression.charAt(i+1) <= '9')
+
             {
                 continue;
             }else
             {
                 return false;
             }
-            
+
         }
 
         return true;
