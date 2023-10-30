@@ -77,6 +77,7 @@ public class Calculator {
                     i--;    // 숫자 추출 후 인덱스 복원
                 }
                 else if (currentChar == '(') {
+
                     stackCount++;
                     int  j= i+1;
                     for (; j < expression.length() && stackCount > 0; j++)
@@ -109,8 +110,10 @@ public class Calculator {
                             }
                         }
 
-                        if (!isOperator) {
-                            isOperandShouldMinus = -1; // 뒤에 push될 피연산자가 -로 표시되어야 한다는 표시를 남깁니다.
+
+                        if(!isoperator) // - 바로 앞에 또 연산자가 있어서 -가 부호로 사용될 수밖에 없을 떄
+                        {
+                            isOperandShouldMinus = -1; // 뒤에 push될 피연산자가 - 화 되야 한다는 표시를 남기고 다음으로 넘어간다
                             continue;
                         }
                     }
@@ -124,6 +127,7 @@ public class Calculator {
                         char operator = operators.pop();
                         double result = performOperation(a, b, operator);
                         numbers.push(result);
+
                         // 직전값 업데이트
                         previousValue = result;
                     }
@@ -149,6 +153,7 @@ public class Calculator {
                 // 직전값 업데이트
                 previousValue = result;
             }
+
 
             finalResult = numbers.pop();
             if(!numbers.isEmpty()) throw new ErrorHandler(ErrorType.InValidExperssion_error);
@@ -203,7 +208,8 @@ public class Calculator {
     }
 
     private static Object[] preProcessing(String expression) throws ErrorHandler
-    {
+
+    {   // 반환은, ^를 위한 괄호 처리가 완료된 문자열과, 식이 대입식인지 아닌지 저장하는 boolean이다.
         if (expression.length() > 200) throw new ErrorHandler(ErrorType.Length_error);
 
         expression = expression.replaceAll(" ", ""); // 입력 문자열에서 공백 제거
@@ -336,7 +342,11 @@ public class Calculator {
         {
             return false;
         }
+
+        System.out.println(sb);
+        return sb.toString();
     }
+
 
     private static boolean check_Operand_Operator_Char(String expression)
     {
@@ -361,6 +371,7 @@ public class Calculator {
                 continue;
             }else if(expression.charAt(i) == '.' && i>0 && (i+1) < expression.length() &&
                     expression.charAt(i-1) >= '0' && expression.charAt(i-1) <= '9' && expression.charAt(i+1) >= '0' && expression.charAt(i+1) <= '9')
+
             {
                 continue;
             }else
