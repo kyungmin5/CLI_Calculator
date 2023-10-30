@@ -1,3 +1,4 @@
+import java.text.DecimalFormat;
 import java.util.EmptyStackException;
 import java.util.Stack;
 // import java.util.Scanner;
@@ -111,7 +112,7 @@ public class Calculator {
                         }
 
 
-                        if(!isoperator) // - 바로 앞에 또 연산자가 있어서 -가 부호로 사용될 수밖에 없을 떄
+                        if(!isOperator) // - 바로 앞에 또 연산자가 있어서 -가 부호로 사용될 수밖에 없을 떄
                         {
                             isOperandShouldMinus = -1; // 뒤에 push될 피연산자가 - 화 되야 한다는 표시를 남기고 다음으로 넘어간다
                             continue;
@@ -124,8 +125,11 @@ public class Calculator {
 
                         double b = numbers.pop();
                         double a = numbers.pop();
+                        check_Range_In_Perform(a);
+                        check_Range_In_Perform(b);
                         char operator = operators.pop();
                         double result = performOperation(a, b, operator);
+                        check_Range_In_Perform(result);
                         numbers.push(result);
 
                         // 직전값 업데이트
@@ -147,8 +151,11 @@ public class Calculator {
             while (!operators.isEmpty()) {
                 double b = numbers.pop();
                 double a = numbers.pop();
+                check_Range_In_Perform(a);
+                check_Range_In_Perform(b);
                 char operator = operators.pop();
                 double result = performOperation(a, b, operator);
+                check_Range_In_Perform(result);
                 numbers.push(result);
                 // 직전값 업데이트
                 previousValue = result;
@@ -163,6 +170,15 @@ public class Calculator {
         }
 
         // 최종 결과 반환
+        DecimalFormat df = new DecimalFormat("#.######");
+        check_Range_Result(finalResult);
+
+                if(finalResult == (int) finalResult){
+                    finalResult = (int)finalResult;
+                }else{
+                    finalResult = Double.parseDouble(df.format(finalResult));
+                }
+
         return finalResult;
     }
 
@@ -343,8 +359,7 @@ public class Calculator {
             return false;
         }
 
-        System.out.println(sb);
-        return sb.toString();
+        
     }
 
 
@@ -382,5 +397,21 @@ public class Calculator {
         }
 
         return true;
+    }
+
+    private static double check_Range_In_Perform(double num) throws ErrorHandler{
+        if (num < Double.MIN_VALUE || num> Double.MAX_VALUE) {
+            throw new ErrorHandler(ErrorType.TempValueOutofBound_error_error);
+        }else{
+            return num;
+        }
+    }
+
+    private static double check_Range_Result(double result) throws ErrorHandler{
+        if (result < Double.MIN_VALUE || result> Double.MAX_VALUE) {
+            throw new ErrorHandler(ErrorType.ResultValueOutofBound_error);
+        }else{
+            return result;
+        }
     }
 }
