@@ -9,7 +9,7 @@ public class ErrorHandler extends Exception {
     public void PrintError() {
       switch (errorType) {
         case Command_error:
-          System.out.println("정해진 1 , 2 , 3 명령어만 입력해 주세요");
+          System.out.println("정해진 1 , 2 , 3 명령어만 입력해 주세요\n");
           break;
         case Length_error:
         case Bracket_error:

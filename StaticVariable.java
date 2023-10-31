@@ -2,7 +2,7 @@ public class StaticVariable {
   
   public static int resultBuffer = 0;
 
-  public String menuString = """
+  public static String menuString = """
     1. 사용 설명
     2. 계산하기
     3. 프로그램 종료
@@ -14,7 +14,7 @@ public class StaticVariable {
   //   1 : 설명서 띄우기 || 2 : 계산하기 || 3 : 종료하기
   //   입력 : """;
 
-  public String scriptString = """
+  public static String scriptString = """
 
 ======================================================================================
 초간단 계산기의 사용 설명서입니다.
