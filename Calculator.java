@@ -286,7 +286,7 @@ public class Calculator {
                     }
                     end++;  // 닫는 괄호 다음 위치로 이동
                 } else {
-                    while (end < sb.length() && (Character.isDigit(sb.charAt(end)) || sb.charAt(end) == '.' || sb.charAt(end) == ' ')) {
+                    while (end < sb.length() && (Character.isDigit(sb.charAt(end)) || sb.charAt(end) == '.' || sb.charAt(end) == ' ' || Character.isAlphabetic(sb.charAt(end)) || sb.charAt(end) == '$' || sb.charAt(end) == '_'))  {
                         end++;
                     }
                 }
@@ -307,7 +307,7 @@ public class Calculator {
                         if (sb.charAt(start) == ')') closeParensCount++;
                     }
                 } else {
-                    while (start >= 0 && (Character.isDigit(sb.charAt(start)) || sb.charAt(start) == '.' || sb.charAt(start) == ' ')) {
+                    while (start >= 0 && (Character.isDigit(sb.charAt(start)) || sb.charAt(start) == '.' || sb.charAt(start) == ' '  || Character.isAlphabetic(sb.charAt(start)) || sb.charAt(start) == '$' || sb.charAt(start) == '_')) {
                         start--;
                     }
                 }
