@@ -225,7 +225,7 @@ public class Calculator {
         }
     }
 
-    private static Object[] preProcessing(String expression) throws ErrorHandler
+    private static Object[] preProcessing(String expression) throws ErrorHandler // 
     {   // 반환은, ^를 위한 괄호 처리가 완료된 문자열과, 식이 대입식인지 아닌지 저장하는 boolean이다.
         if(expression.length() > 200) throw new ErrorHandler(ErrorType.Length_error);
 
@@ -353,9 +353,13 @@ public class Calculator {
         {
             return false;
         }
-
-        
+ 
     }
+
+    // private static boolean checkArrangemnet(String str)
+    // {
+
+    // }
 
 
     private static boolean check_Operand_Operator_Char(String expression)
@@ -395,18 +399,19 @@ public class Calculator {
     }
 
     private static double check_Range_In_Perform(double num) throws ErrorHandler{
-        if (num < Double.MIN_VALUE || num> Double.MAX_VALUE) {
-            throw new ErrorHandler(ErrorType.TempValueOutofBound_error_error);
-        }else{
+        if (num >= -Double.MAX_VALUE && num <= Double.MAX_VALUE) {
             return num;
+        }else{
+            throw new ErrorHandler(ErrorType.TempValueOutofBound_error);
+
         }
     }
 
     private static double check_Range_Result(double result) throws ErrorHandler{
-        if (result < Double.MIN_VALUE || result> Double.MAX_VALUE) {
-            throw new ErrorHandler(ErrorType.ResultValueOutofBound_error);
-        }else{
+        if (result >= -Double.MAX_VALUE && result <= Double.MAX_VALUE) {
             return result;
+        }else{
+            throw new ErrorHandler(ErrorType.ResultValueOutofBound_error);
         }
     }
 }

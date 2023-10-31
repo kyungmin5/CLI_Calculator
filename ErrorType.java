@@ -11,5 +11,5 @@ enum ErrorType {
   InValidExperssion_error, // 올바르지 않은 수식
   // Result Error
   ResultValueOutofBound_error, // 유효한 결과 범위 초과
-  TempValueOutofBound_error_error, // 계산 과정에서 유효한 결과 범위 초과
+  TempValueOutofBound_error, // 계산 과정에서 유효한 결과 범위 초과
 }
