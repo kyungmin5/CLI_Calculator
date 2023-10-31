@@ -23,25 +23,14 @@ public class Calculator {
         expression = (String)RESULT[0]; // 수식이면 수식이 ^에 대해 () 처리만 하고 나오고, 대입이라면 = 오른쪽 부분만이 ^처리 후에 나오게 된다
         // 결국, 수식이면 계산 한 값을 반환하면 되는 것이고, 대입이라면 계산 한 값을 x에 대입하면 되는 것이다
 
-        //double result = RecursiveCaluculate(expression);
+        double result = RecursiveCaluculate(expression);
 
         if (isSubstitution) {
             // 대입식인 경우
-            int index = expression.indexOf('=');
-            if (index >= 0) { // index가 유효한 경우에만 처리
-                String variable = expression.substring(0, index).trim();
-                String valueExpression = expression.substring(index + 1).trim();
-                double result = RecursiveCaluculate(valueExpression);
-                setXValue(result); // x에 값을 할당
-                return getXValue(); // 대입식의 결과로 xValue를 반환
-            } else {
-                throw new ErrorHandler(ErrorType.InValidExperssion_error);
-            }
+            xValue = result;
         }
 
-
         // 직전 값에 대입하는 식
-        double result = RecursiveCaluculate(expression);
         return result;
 
     }
@@ -54,6 +43,7 @@ public class Calculator {
 
         double finalResult = 0;
         int isOperandShouldMinus = 1;
+        boolean isDollarX = false;
 
         try {
             for (int i = 0; i < expression.length(); i++) {
@@ -94,7 +84,19 @@ public class Calculator {
                     numbers.push(RecursiveCaluculate(expression.substring(i+1, j-1)) * isOperandShouldMinus);
                     isOperandShouldMinus = 1;
                     i = j-1;  // 여기가 실제 ) 가 있는 인덱스. i를 ) 의 index로 보내버린다.
-                } else if (isOperator(currentChar)) {
+                }else if(currentChar == '$')
+                {
+                    continue;
+                }else if(currentChar == 'x')
+                {
+                    System.out.println(xValue);
+                    if(Double.isNaN(xValue))
+                    {
+                        throw new ErrorHandler(ErrorType.InValidOperand_error);
+                    }
+
+                    numbers.push(xValue);
+                }else if (isOperator(currentChar)) {
                     // 연산자 우선순위를 고려하여 스택에 push
                     if (currentChar == '-' && i + 1 < expression.length() && (Character.isDigit(expression.charAt(i + 1)) || expression.charAt(i + 1) == '(' || expression.charAt(i + 1) == '_' || expression.charAt(i + 1) == '&')) {
                         // 이게 딱 음수 부호 피연산자의 형태. 이게 아니면 모두 연산자 처리한다
@@ -224,36 +226,29 @@ public class Calculator {
     }
 
     private static Object[] preProcessing(String expression) throws ErrorHandler
-
     {   // 반환은, ^를 위한 괄호 처리가 완료된 문자열과, 식이 대입식인지 아닌지 저장하는 boolean이다.
-        if (expression.length() > 200) throw new ErrorHandler(ErrorType.Length_error);
+        if(expression.length() > 200) throw new ErrorHandler(ErrorType.Length_error);
 
-        expression = expression.replaceAll(" ", ""); // 입력 문자열에서 공백 제거
+        expression = expression.trim();
 
         boolean isSubstitution = false;
 
-        if (expression.startsWith("$x=")) {
+        if(checksubstitution(expression))
+        {
             isSubstitution = true;
-            int index = expression.indexOf('=');
-
-            if (index >= 0 && index + 1 < expression.length()) {
-                String valueStr = expression.substring(3, index).trim();
-
-                try {
-                    double xVal = Double.parseDouble(valueStr);
-                    setXValue(xVal); // $x에 값을 할당
-                    expression = expression.substring(index + 1).trim();
-                } catch (NumberFormatException e) {
-                    throw new ErrorHandler(ErrorType.InValidOperand_error);
-                }
-            } else {
-                throw new ErrorHandler(ErrorType.InValidExperssion_error);
+            int index = 0;
+            while(expression.charAt(index) != '=')
+            {
+                index++;
             }
-        }
 
+            expression = expression.substring(index+1);
+            expression = expression.trim();
+        }   
 
-        if (!checkBracket(expression)) throw new ErrorHandler(ErrorType.Bracket_error);
-        if (!check_Operand_Operator_Char(expression)) throw new ErrorHandler(ErrorType.InValidExperssion_error);
+        if(!checkBracket(expression)) throw new ErrorHandler(ErrorType.Bracket_error);
+        if(!check_Operand_Operator_Char(expression)) throw new ErrorHandler(ErrorType.InValidExperssion_error);
+
 
         expression = optimizeForPower(expression);
 
@@ -327,9 +322,9 @@ public class Calculator {
 
     private static boolean checksubstitution(String expression)
     {
-        String checkStr = "$x=";
+        String checkStr = "$x =";
 
-        if (expression.length() >= 5 && expression.substring(0, 3).equals(checkStr)) return true;
+        if (expression.length() >= 5 && expression.substring(0, 4).equals(checkStr)) return true;
 
         return false;
     }
@@ -378,10 +373,10 @@ public class Calculator {
             }else if(expression.charAt(i) == '_' || expression.charAt(i) == ' ')
             {
                 continue;
-            }else if(expression.charAt(i) == '&' && (i+1) < expression.length() && expression.charAt(i+1) == 'x')
+            }else if(expression.charAt(i) == '$' && (i+1) < expression.length() && expression.charAt(i+1) == 'x')
             {
                 continue;
-            }else if(expression.charAt(i) == 'x' && i>0 && expression.charAt(i-1) == '&')
+            }else if(expression.charAt(i) == 'x' && i>0 && expression.charAt(i-1) == '$')
             {
                 continue;
             }else if(expression.charAt(i) == '.' && i>0 && (i+1) < expression.length() &&
