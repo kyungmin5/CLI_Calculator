@@ -242,13 +242,13 @@ public class Calculator {
                 index++;
             }
 
+
             expression = expression.substring(index+1);
             expression = expression.trim();
         }   
 
         if(!checkBracket(expression)) throw new ErrorHandler(ErrorType.Bracket_error);
         if(!check_Operand_Operator_Char(expression)) throw new ErrorHandler(ErrorType.InValidExperssion_error);
-
 
         expression = optimizeForPower(expression);
 
