@@ -55,6 +55,7 @@ public class CalculatorApp {
                     System.out.println((int) result);
                 } else {
                     NumberFormat numberFormat = NumberFormat.getInstance();
+                    numberFormat.setMaximumFractionDigits(6);
                     numberFormat.setGroupingUsed(false);
                     System.out.println(numberFormat.format(result));
                 }
