@@ -1,6 +1,7 @@
 import java.util.Scanner;
 
 public class CalculatorApp {
+    private static Scanner scanner = new Scanner(System.in);
     public static void main(String[] args) {
         System.out.println(StaticVariable.scriptString);
 
@@ -17,7 +18,6 @@ public class CalculatorApp {
 
     // 메뉴 기능
     private static boolean printMenu() throws ErrorHandler {
-            Scanner scanner = new Scanner(System.in);
             System.out.print(StaticVariable.menuString + "> ");
             String expression = scanner.nextLine();
 
@@ -30,19 +30,15 @@ public class CalculatorApp {
                     break;
                 case "3":
                     System.out.println(StaticVariable.exitString);
-                    scanner.close();
                     return true;
                 default:
-                    scanner.close();
                     throw new ErrorHandler(ErrorType.Command_error);
             }
-            scanner.close();
             return false;
     }
 
+    // 계산 기능
     private static void generateCalculator() {
-        Scanner scanner = new Scanner(System.in);
-        
         while(true) {
             System.out.print(StaticVariable.calculatorString);
             String expression = scanner.nextLine();
@@ -57,6 +53,5 @@ public class CalculatorApp {
                 e.PrintError();
             }   
         }
-        scanner.close();
     }
 }

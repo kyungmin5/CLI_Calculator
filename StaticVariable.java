@@ -36,7 +36,7 @@ public class StaticVariable {
   10. 계산 과정 중 사용 규칙을 어길 경우, 오류 문구를 출력하고 재입력을 받습니다.
 """;
 
-public static String calculatorString = "계산할 수식을 입력하세요: ";
+public static String calculatorString = "계산할 수식을 입력해주세요: ";
 public static String exitString = "\n계산기를 종료합니다.";
 }
 
