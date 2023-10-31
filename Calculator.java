@@ -250,8 +250,6 @@ public class Calculator {
                 throw new ErrorHandler(ErrorType.InValidExperssion_error);
             }
         }
-
-
         if (!checkBracket(expression)) throw new ErrorHandler(ErrorType.Bracket_error);
         if (!check_Operand_Operator_Char(expression)) throw new ErrorHandler(ErrorType.InValidExperssion_error);
 

@@ -1,5 +1,7 @@
 import java.util.Scanner;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 public class CalculatorApp {
     public static void main(String[] args) {
         StaticVariable staticVariable = new StaticVariable();
@@ -31,6 +33,8 @@ public class CalculatorApp {
 
     private static void generateCalculator() {
         Scanner scanner = new Scanner(System.in);
+        NumberFormat f = NumberFormat.getInstance();
+        f.setGroupingUsed(false);
 
         System.out.print("계산할 수식을 입력하세요: ");
         Calculator c = new Calculator();
@@ -39,8 +43,14 @@ public class CalculatorApp {
 
         while(!expression.equalsIgnoreCase("q")) {
             try {
+            
                 double result = c.calculate(expression);
-                System.out.println("결과 : " + result);
+                if(result == (int) result){
+                    System.out.println((int) result);
+                }else{
+                    System.out.println(f.format(result));
+                }
+                
                 System.out.print("계산할 수식을 입력하세요: ");
                 expression = scanner.nextLine();
                 System.out.println();
