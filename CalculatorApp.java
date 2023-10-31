@@ -1,55 +1,66 @@
 import java.util.Scanner;
-import java.text.DecimalFormat;
-public class CalculatorApp {
-    public static void main(String[] args) {
-        StaticVariable staticVariable = new StaticVariable();
-        System.out.println(staticVariable.scriptString);
+import java.text.NumberFormat;
 
-        menu: while (true) {
-            // 1. 입력 받기
-            Scanner scanner = new Scanner(System.in);
-            System.out.print(staticVariable.menuString);
-            System.out.print("> ");
+public class CalculatorApp {
+    private static Scanner scanner = new Scanner(System.in);
+    public static void main(String[] args) {
+        System.out.println(StaticVariable.scriptString);
+
+        while (true) {
+            try {
+                if (printMenu()) {
+                   break;
+                }
+            } catch (ErrorHandler e) {
+                e.PrintError();
+            }
+        }
+    }
+
+    // 메뉴 기능
+    private static boolean printMenu() throws ErrorHandler {
+            System.out.print(StaticVariable.menuString + "> ");
             String expression = scanner.nextLine();
 
             switch (expression) {
                 case "1":
-                    System.out.println(staticVariable.scriptString);
+                    System.out.println(StaticVariable.scriptString);
                     break;
                 case "2":
                     generateCalculator();
                     break;
                 case "3":
-                    System.out.println("\n계산기를 종료합니다.");
-                    break menu;
+                    System.out.println(StaticVariable.exitString);
+                    return true;
                 default:
-                    ErrorHandler error = new ErrorHandler(ErrorType.Command_error);
-                    error.PrintError();
+                    throw new ErrorHandler(ErrorType.Command_error);
             }
-        }
+            return false;
     }
 
+    // 계산 기능
     private static void generateCalculator() {
-        Scanner scanner = new Scanner(System.in);
+        while(true) {
+            System.out.print(StaticVariable.calculatorString);
+            String expression = scanner.nextLine();
+            System.out.println();
 
-        System.out.print("계산할 수식을 입력하세요: ");
-        Calculator c = new Calculator();
-        String expression = scanner.nextLine();
-        System.out.println();
+            if (expression.equalsIgnoreCase("q")) {
+                break;
+            }
 
-        while(!expression.equalsIgnoreCase("q")) {
             try {
-                double result = c.calculate(expression);
-                System.out.println("결과 : " + result);
-                System.out.print("계산할 수식을 입력하세요: ");
-                expression = scanner.nextLine();
-                System.out.println();
+                double result = Calculator.calculate(expression);
+                if (result == (int) result) {
+                    System.out.println((int) result);
+                } else {
+                    NumberFormat numberFormat = NumberFormat.getInstance();
+                    numberFormat.setGroupingUsed(false);
+                    System.out.println(numberFormat.format(result));
+                }
             } catch (ErrorHandler e) {
                 e.PrintError();
-                System.out.print("계산할 수식을 입력하세요: ");
-                expression = scanner.nextLine();
-                System.out.println();
-            }
+            }   
         }
     }
 }
