@@ -1,5 +1,5 @@
 import java.util.Scanner;
-import java.text.DecimalFormat;
+
 public class CalculatorApp {
     public static void main(String[] args) {
         System.out.println(StaticVariable.scriptString);
@@ -33,6 +33,7 @@ public class CalculatorApp {
                     scanner.close();
                     return true;
                 default:
+                    scanner.close();
                     throw new ErrorHandler(ErrorType.Command_error);
             }
             scanner.close();
@@ -46,13 +47,13 @@ public class CalculatorApp {
             System.out.print(StaticVariable.calculatorString);
             String expression = scanner.nextLine();
             System.out.println();
-            if expression.equalsIgnoreCase("q") {
+            if (expression.equalsIgnoreCase("q")) {
                 break;
             }
             try {
                 double result = Calculator.calculate(expression);
                 System.out.print("결과 : " + result + "\n");
-            } catch (Exception e) {
+            } catch (ErrorHandler e) {
                 e.PrintError();
             }   
         }
