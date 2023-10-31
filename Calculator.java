@@ -250,6 +250,8 @@ public class Calculator {
         if(!checkBracket(expression)) throw new ErrorHandler(ErrorType.Bracket_error);
         if(!check_Operand_Operator_Char(expression)) throw new ErrorHandler(ErrorType.InValidExperssion_error);
 
+        System.out.println(checkStrArrangemnet(expression)); 
+
         expression = optimizeForPower(expression);
 
         return new Object[] {expression, isSubstitution};
@@ -356,10 +358,45 @@ public class Calculator {
  
     }
 
-    // private static boolean checkArrangemnet(String str)
-    // {
+    private static boolean checkStrArrangemnet(String expression) // 피연산자와 연산자가 제대로 떨어져 있는지 확인하는 함수입니다
+    {
+        StringBuilder sb = new StringBuilder(expression);
 
-    // }
+        for(int i=0; i<expression.length(); i++)
+        {
+            if(sb.charAt(i)== '(' || sb.charAt(i)== ')' || ((sb.charAt(i)== '-' || sb.charAt(i)== '+' || sb.charAt(i)== '*' || sb.charAt(i)== '/' || sb.charAt(i)== '^') && i+1 < expression.length() && sb.charAt(i+1) != ' '))
+            {
+                sb.setCharAt(i, ' ');
+            }
+        }
+
+        int isTopOperator = 0; // 0 -> empty, 1-> operator, 2->operand
+        String[] words = sb.toString().split("\\s+");  
+
+        for (String string : words) {
+            string = string.trim();
+            System.out.print(string + " ");
+        }
+        System.out.println();
+        for (String string : words) {
+            string = string.trim();
+            System.out.print(string + " ");
+
+            if(string.equals("+") || string.equals("-") ||string.equals("*") ||string.equals("/") ||string.equals("^")) // 연산자인 경우
+            {
+                if(isTopOperator == 0 || isTopOperator == 1) return false; // 연산자가 들어왔는데 또 연산자가 번달아 왔으므로 오류 
+                isTopOperator = 1;
+            }else //피연산자 이 경우
+            {
+                if(isTopOperator == 2) return false; // 피연산자가 들어왔는데 또 피연산자가 번달아 왔으므로 오류 
+
+                isTopOperator = 2;
+            }
+        }
+
+        return isTopOperator != 1;
+          
+    }
 
 
     private static boolean check_Operand_Operator_Char(String expression)
