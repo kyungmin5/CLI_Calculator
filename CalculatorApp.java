@@ -1,4 +1,5 @@
 import java.util.Scanner;
+import java.text.NumberFormat;
 
 public class CalculatorApp {
     private static Scanner scanner = new Scanner(System.in);
@@ -43,12 +44,20 @@ public class CalculatorApp {
             System.out.print(StaticVariable.calculatorString);
             String expression = scanner.nextLine();
             System.out.println();
+
             if (expression.equalsIgnoreCase("q")) {
                 break;
             }
+
             try {
                 double result = Calculator.calculate(expression);
-                System.out.print("결과 : " + result + "\n");
+                if (result == (int) result) {
+                    System.out.println((int) result);
+                } else {
+                    NumberFormat numberFormat = NumberFormat.getInstance();
+                    numberFormat.setGroupingUsed(false);
+                    System.out.println(numberFormat.format(result));
+                }
             } catch (ErrorHandler e) {
                 e.PrintError();
             }   
