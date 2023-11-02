@@ -326,6 +326,9 @@ public class Calculator {
                         start--;
                     }
                 }
+                if (sb.charAt(start) == '-') {
+                    start--;
+                }
                 sb.insert(start + 1, "(");
                 i = start + 1;  // '(' 위치 다음으로 이동
             }
