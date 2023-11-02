@@ -52,6 +52,7 @@ public class Calculator {
         try {
             for (int i = 0; i < expression.length(); i++) {
                 char currentChar = expression.charAt(i);
+                System.out.println(currentChar);
 
                 if (currentChar == ' ') {
                     continue; // 공백 문자는 무시
@@ -99,10 +100,11 @@ public class Calculator {
                         throw new ErrorHandler(ErrorType.InValidOperand_error);
                     }
 
-                    numbers.push(xValue);
+                    numbers.push(xValue * isOperandShouldMinus);
+                    isOperandShouldMinus = 1;
                 }else if (isOperator(currentChar)) {
                     // 연산자 우선순위를 고려하여 스택에 push
-                    if (currentChar == '-' && i + 1 < expression.length() && (Character.isDigit(expression.charAt(i + 1)) || expression.charAt(i + 1) == '(' || expression.charAt(i + 1) == '_' || expression.charAt(i + 1) == '&')) {
+                    if (currentChar == '-' && i + 1 < expression.length() && (Character.isDigit(expression.charAt(i + 1)) || expression.charAt(i + 1) == '(' || expression.charAt(i + 1) == '_' || expression.charAt(i + 1) == '$')) {
                         // 이게 딱 음수 부호 피연산자의 형태. 이게 아니면 모두 연산자 처리한다
                         // 다만 이것이 음수 부호 형태가 맞지만, 연산자가 아니라는 것은 아니므로 추가 처리가 필요하다
                         boolean isOperator = false;
@@ -136,10 +138,12 @@ public class Calculator {
                         char operator = operators.pop();
                         double result = performOperation(a, b, operator);
                         check_Range_In_Perform(result);
-                        numbers.push(result);
+                        numbers.push(result * isOperandShouldMinus);
+                        previousValue = result  * isOperandShouldMinus;
+
+                        isOperandShouldMinus = 1;
 
                         // 직전값 업데이트
-                        previousValue = result;
                     }
                     operators.push(currentChar);
                 }else if (currentChar == '_') {
@@ -148,7 +152,8 @@ public class Calculator {
                         throw new ErrorHandler(ErrorType.InValidOperand_error);
                     }
                     // '_'를 만날 때 직전값을 스택에 push
-                    numbers.push(previousValue);
+                    numbers.push(previousValue * isOperandShouldMinus);
+                    isOperandShouldMinus = 1;
                 }
             }
 
@@ -157,18 +162,21 @@ public class Calculator {
             while (!operators.isEmpty()) {
                 double b = numbers.pop();
                 double a = numbers.pop();
+
                 check_Range_In_Perform(a);
                 check_Range_In_Perform(b);
                 char operator = operators.pop();
                 double result = performOperation(a, b, operator);
                 check_Range_In_Perform(result);
-                numbers.push(result);
+                numbers.push(result * isOperandShouldMinus);
                 // 직전값 업데이트
-                previousValue = result;
+                previousValue = result * isOperandShouldMinus;
+
+                isOperandShouldMinus = 1;
             }
 
-
             finalResult = numbers.pop();
+
             if(!numbers.isEmpty()) throw new ErrorHandler(ErrorType.InValidExperssion_error);
 
         } catch (EmptyStackException e) {
@@ -252,10 +260,11 @@ public class Calculator {
         }   
 
         if(!checkBracket(expression)) throw new ErrorHandler(ErrorType.Bracket_error);
-        if(!check_Operand_Operator_Char(expression)) throw new ErrorHandler(ErrorType.InValidExperssion_error);
-        if(!checkStrArrangemnet(expression)) throw new ErrorHandler(ErrorType.InValidExperssion_error); // 이부분은 피연산자와 연산자가 반드시 떨어져 있는지 아닌지를 판단하는 부분입니다
-                                                                                                        // 추후 요구사항에 지우면 됩니다
 
+        if(!check_Operand_Operator_Char(expression)) throw new ErrorHandler(ErrorType.InValidExperssion_error);
+
+        if(!checkStrArrangemnet(expression)) throw new ErrorHandler(ErrorType.InValidExperssion_error); // 이부분은 피연산자와 연산자가 반드시 떨어져 있는지 아닌지를 판단하는 부분입니다
+                                                                                                           // 추후 요구사항에 지우면 됩니다
         expression = optimizeForPower(expression);
 
         return new Object[] {expression, isSubstitution};
@@ -378,10 +387,6 @@ public class Calculator {
         int isTopOperator = 0; // 0 -> empty, 1-> operator, 2->operand
         String[] words = sb.toString().split("\\s+");  
 
-        for (String string : words) {
-            string = string.trim();
-            System.out.println(string);
-        }
         System.out.println();
         for (String string : words) {
             string = string.trim();
