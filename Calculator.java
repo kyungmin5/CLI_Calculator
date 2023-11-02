@@ -373,18 +373,19 @@ public class Calculator {
                 sb.setCharAt(i, ' ');
             }
         }
+        sb = new StringBuilder(sb.toString().trim());
 
         int isTopOperator = 0; // 0 -> empty, 1-> operator, 2->operand
         String[] words = sb.toString().split("\\s+");  
 
         for (String string : words) {
             string = string.trim();
-            System.out.print(string + " ");
+            System.out.println(string);
         }
         System.out.println();
         for (String string : words) {
             string = string.trim();
-            System.out.print(string + " ");
+            System.out.println(string);
 
             if(string.equals("+") || string.equals("-") ||string.equals("*") ||string.equals("/") ||string.equals("^")) // 연산자인 경우
             {
