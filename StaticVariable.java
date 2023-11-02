@@ -1,6 +1,6 @@
 public class StaticVariable {
   
-  public static int resultBuffer = 0;
+  public static double resultBuffer = Double.NaN;
 
   public static String menuString = """
     1. 사용 설명

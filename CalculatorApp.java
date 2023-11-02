@@ -63,5 +63,8 @@ public class CalculatorApp {
                 e.PrintError();
             }   
         }
+
+        Calculator.setPreviousValue(Double.NaN); 
+        Calculator.setXValue(Double.NaN);
     }
 }

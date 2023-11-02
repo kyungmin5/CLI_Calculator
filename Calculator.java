@@ -4,7 +4,7 @@ import java.util.Stack;
 // import java.util.Scanner;
 
 public class Calculator {
-    private static double previousValue;
+    private static double previousValue = Double.NaN;
     private static double xValue = Double.NaN; // 초기에는 값이 없음을 나타내기 위해 NaN 사용
 
     public static double getXValue() {
@@ -13,6 +13,10 @@ public class Calculator {
 
     public static void setXValue(double value) {
         xValue = value;
+    }
+
+    public static void setPreviousValue(double value) {
+        previousValue = value;
     }
     public static double calculate(String expression) throws ErrorHandler {
 
@@ -249,8 +253,8 @@ public class Calculator {
 
         if(!checkBracket(expression)) throw new ErrorHandler(ErrorType.Bracket_error);
         if(!check_Operand_Operator_Char(expression)) throw new ErrorHandler(ErrorType.InValidExperssion_error);
-
-        System.out.println(checkStrArrangemnet(expression)); 
+        if(!checkStrArrangemnet(expression)) throw new ErrorHandler(ErrorType.InValidExperssion_error); // 이부분은 피연산자와 연산자가 반드시 떨어져 있는지 아닌지를 판단하는 부분입니다
+                                                                                                        // 추후 요구사항에 지우면 됩니다
 
         expression = optimizeForPower(expression);
 
