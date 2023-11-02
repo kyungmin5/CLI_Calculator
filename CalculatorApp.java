@@ -45,7 +45,7 @@ public class CalculatorApp {
             String expression = scanner.nextLine();
             System.out.println();
 
-            if (expression.equalsIgnoreCase("q")) {
+            if (expression.equals("q")) {
                 break;
             }
 
