@@ -325,7 +325,7 @@ public class Calculator {
                         start--;
                     }
                 }
-                if (start > 0 && sb.charAt(start) == '-') {
+                if (start >= 0 && sb.charAt(start) == '-') {
                     start--;
                 }
                 sb.insert(start + 1, "(");
