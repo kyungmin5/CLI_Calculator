@@ -52,7 +52,6 @@ public class Calculator {
         try {
             for (int i = 0; i < expression.length(); i++) {
                 char currentChar = expression.charAt(i);
-                System.out.println(currentChar);
 
                 if (currentChar == ' ') {
                     continue; // 공백 문자는 무시
@@ -286,7 +285,7 @@ public class Calculator {
 
                 // 음수인 경우 확인
                 boolean isNegative = false;
-                if (sb.charAt(end) == '-') {
+                if (end < sb.length()-1 && sb.charAt(end) == '-') {
                     isNegative = true;
                     end++;
                 }
@@ -326,7 +325,7 @@ public class Calculator {
                         start--;
                     }
                 }
-                if (sb.charAt(start) == '-') {
+                if (start > 0 && sb.charAt(start) == '-') {
                     start--;
                 }
                 sb.insert(start + 1, "(");
