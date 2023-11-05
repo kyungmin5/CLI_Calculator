@@ -67,7 +67,7 @@ public class Calculator {
                     double num = Double.parseDouble(numBuilder.toString());
                     numbers.push(num * isOperandShouldMinus);
                     // 직전값 업데이트
-                    previousValue = num * isOperandShouldMinus;
+                    // previousValue = num * isOperandShouldMinus;
                     isOperandShouldMinus = 1;
                     i--;    // 숫자 추출 후 인덱스 복원
                 }
@@ -138,7 +138,7 @@ public class Calculator {
                         double result = performOperation(a, b, operator);
                         check_Range_In_Perform(result);
                         numbers.push(result * isOperandShouldMinus);
-                        previousValue = result  * isOperandShouldMinus;
+                        // previousValue = result  * isOperandShouldMinus;
 
                         isOperandShouldMinus = 1;
 
@@ -169,7 +169,7 @@ public class Calculator {
                 check_Range_In_Perform(result);
                 numbers.push(result * isOperandShouldMinus);
                 // 직전값 업데이트
-                previousValue = result * isOperandShouldMinus;
+                // previousValue = result * isOperandShouldMinus;
 
                 isOperandShouldMinus = 1;
             }
@@ -191,7 +191,7 @@ public class Calculator {
                 }else{
                     finalResult = Double.parseDouble(df.format(finalResult));
                 }
-
+        previousValue = finalResult;
         return finalResult;
     }
 
