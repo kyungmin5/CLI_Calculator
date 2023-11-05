@@ -43,7 +43,7 @@ public class CalculatorApp {
         while(true) {
             System.out.print(StaticVariable.calculatorString);
             String expression = scanner.nextLine();
-            System.out.println();
+            // System.out.println();
 
             if (expression.equals("q")) {
                 break;
