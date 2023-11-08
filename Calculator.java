@@ -93,7 +93,7 @@ public class Calculator {
                     continue;
                 }else if(currentChar == 'x')
                 {
-                    System.out.println(xValue);
+                    // System.out.println(xValue);
                     if(Double.isNaN(xValue))
                     {
                         throw new ErrorHandler(ErrorType.InValidOperand_error);
@@ -333,7 +333,7 @@ public class Calculator {
             }
         }
 
-        System.out.println(sb);
+        // System.out.println(sb);
         return sb.toString();
     }
 
@@ -389,10 +389,10 @@ public class Calculator {
         int isTopOperator = 0; // 0 -> empty, 1-> operator, 2->operand
         String[] words = sb.toString().split("\\s+");  
 
-        System.out.println();
+        // System.out.println();
         for (String string : words) {
             string = string.trim();
-            System.out.println(string);
+            // System.out.println(string);
 
             if(string.equals("+") || string.equals("-") ||string.equals("*") ||string.equals("/") ||string.equals("^")) // 연산자인 경우
             {

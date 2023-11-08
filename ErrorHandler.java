@@ -18,8 +18,8 @@ public class ErrorHandler extends Exception {
         case InValidOperator_error:
         case InValidOperand_error:
         case InValidExperssion_error:
-          System.out.println("수식 오류입니다." + errorType);
-          // System.out.println("잘못된 수식입니다.");
+        System.out.println("수식 오류입니다.");
+        // System.out.println("수식 오류입니다." + errorType);  
           break;
         case ResultValueOutofBound_error:
         case TempValueOutofBound_error:
