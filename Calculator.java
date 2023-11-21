@@ -4,34 +4,47 @@ import java.util.Stack;
 // import java.util.Scanner;
 
 public class Calculator {
-    private static double previousValue = Double.NaN;
-    private static double xValue = Double.NaN; // 초기에는 값이 없음을 나타내기 위해 NaN 사용
 
-    public static double getXValue() {
-        return xValue;
+    class Pair {
+        private String x;
+        private String y;
+    
+        Pair(String x, String y) {
+            this.x = x;
+            this.y = y;
+        }
+    
+        public String first(){
+            return x;
+        }
+    
+        public String second(){
+            return y;
+        }
     }
 
-    public static void setXValue(double value) {
-        xValue = value;
-    }
+    
+    private double previousValue = Double.NaN;
+    private UserVariable variable = new UserVariable();
 
-    public static void setPreviousValue(double value) {
+    public void setPreviousValue(double value) {
         previousValue = value;
     }
-    public static double calculate(String expression) throws ErrorHandler {
+    public double calculate(String expression) throws ErrorHandler {
 
         Object[] RESULT = preProcessing(expression);
         //expression = expression.replaceAll(" ", ""); // 입력 문자열에서 공백 제거
 
-        boolean isSubstitution =(boolean)RESULT[1]; // 대입식인지 그냥 수식인지를 판별
-        expression = (String)RESULT[0]; // 수식이면 수식이 ^에 대해 () 처리만 하고 나오고, 대입이라면 = 오른쪽 부분만이 ^처리 후에 나오게 된다
+        boolean isSubstitution =(boolean)RESULT[0]; // 대입식인지 그냥 수식인지를 판별
+        expression = (String)RESULT[1]; // 수식이면 수식이 ^에 대해 () 처리만 하고 나오고, 대입이라면 = 오른쪽 부분만이 ^처리 후에 나오게 된다
+        String variableName = (String)RESULT[2];
         // 결국, 수식이면 계산 한 값을 반환하면 되는 것이고, 대입이라면 계산 한 값을 x에 대입하면 되는 것이다
 
         double result = RecursiveCaluculate(expression);
 
         if (isSubstitution) {
             // 대입식인 경우
-            xValue = result;
+            variable.setVariable(variableName, result);
         }
 
         // 직전 값에 대입하는 식
@@ -39,7 +52,7 @@ public class Calculator {
 
     }
 
-    private static double RecursiveCaluculate(String expression) throws ErrorHandler
+    private double RecursiveCaluculate(String expression) throws ErrorHandler
     {
         Stack<Double> numbers = new Stack<>();
         Stack<Character> operators = new Stack<>();
@@ -90,17 +103,16 @@ public class Calculator {
                     i = j-1;  // 여기가 실제 ) 가 있는 인덱스. i를 ) 의 index로 보내버린다.
                 }else if(currentChar == '$')
                 {
-                    continue;
-                }else if(currentChar == 'x')
-                {
-                    // System.out.println(xValue);
-                    if(Double.isNaN(xValue))
+                    int index = 1;
+                    String variableName = "";
+                    for(; index + i< expression.length() && expression.charAt(index + i) != ' '; index++)
                     {
-                        throw new ErrorHandler(ErrorType.InValidOperand_error);
+                        variableName += expression.charAt(index + i);
                     }
-
-                    numbers.push(xValue * isOperandShouldMinus);
+                    numbers.push(variable.getVariable(variableName) * isOperandShouldMinus);
                     isOperandShouldMinus = 1;
+
+                    i = index + i;
                 }else if (isOperator(currentChar)) {
                     // 연산자 우선순위를 고려하여 스택에 push
                     if (currentChar == '-' && i + 1 < expression.length() && (Character.isDigit(expression.charAt(i + 1)) || expression.charAt(i + 1) == '(' || expression.charAt(i + 1) == '_' || expression.charAt(i + 1) == '$')) {
@@ -156,7 +168,6 @@ public class Calculator {
                 }
             }
 
-
             // 남은 연산자를 모두 처리
             while (!operators.isEmpty()) {
                 double b = numbers.pop();
@@ -195,7 +206,7 @@ public class Calculator {
         return finalResult;
     }
 
-    private static boolean isOperator(char c) {
+    private boolean isOperator(char c) {
         try {
             OperatorType.fromString(Character.toString(c));
         } catch (ErrorHandler e) {
@@ -205,7 +216,7 @@ public class Calculator {
     }
 
 
-    private static int precedence(char operator) {
+    private int precedence(char operator) {
         if (operator == '+' || operator == '-') {
             return 1;
         } else if (operator == '*' || operator == '/') {
@@ -216,7 +227,7 @@ public class Calculator {
         return 0; // 다른 문자의 경우
     }
 
-    private static double performOperation(double a, double b, char operator) throws ErrorHandler {
+    private double performOperation(double a, double b, char operator) throws ErrorHandler {
         switch (operator) {
             case '+':
                 return a + b;
@@ -236,41 +247,34 @@ public class Calculator {
         }
     }
 
-    private static Object[] preProcessing(String expression) throws ErrorHandler // 
+    private Object[] preProcessing(String rawexpression) throws ErrorHandler // 
     {   // 반환은, ^를 위한 괄호 처리가 완료된 문자열과, 식이 대입식인지 아닌지 저장하는 boolean이다.
-        if(expression.length() > 200) throw new ErrorHandler(ErrorType.Length_error);
+        if(rawexpression.length() > 200) throw new ErrorHandler(ErrorType.Length_error);
 
-        expression = expression.trim();
+        rawexpression = rawexpression.trim();
 
-        boolean isSubstitution = false;
+        boolean isSubstitution = true;
+        Pair resultPair = checksubstitution(rawexpression);
+        String variableName = resultPair.first();
+        String expression = resultPair.second();
 
-        if(checksubstitution(expression))
+        if(variableName == "") // 대입 식이 아님
         {
-            isSubstitution = true;
-            int index = 0;
-            while(expression.charAt(index) != '=')
-            {
-                index++;
-            }
-
-
-            expression = expression.substring(index+1);
-            expression = expression.trim();
-        }   
+            isSubstitution = false;
+            expression = rawexpression;
+        }
 
         if(!checkBracket(expression)) throw new ErrorHandler(ErrorType.Bracket_error);
 
-        if(!check_Operand_Operator_Char(expression)) throw new ErrorHandler(ErrorType.InValidExperssion_error);
+        //if(!check_Operand_Operator_Char(expression)) throw new ErrorHandler(ErrorType.InValidExperssion_error);
 
-        if(!checkStrArrangemnet(expression)) throw new ErrorHandler(ErrorType.InValidExperssion_error); // 이부분은 피연산자와 연산자가 반드시 떨어져 있는지 아닌지를 판단하는 부분입니다
-                                                                                                           // 추후 요구사항에 지우면 됩니다
         expression = optimizeForPower(expression);
 
-        return new Object[] {expression, isSubstitution};
+        return new Object[] {isSubstitution, expression, variableName};
     }
 
 
-    private static String optimizeForPower(String expression)
+    private String optimizeForPower(String expression)
     {
         StringBuilder sb = new StringBuilder(expression);
 
@@ -333,20 +337,35 @@ public class Calculator {
             }
         }
 
-        // System.out.println(sb);
         return sb.toString();
     }
 
-    private static boolean checksubstitution(String expression)
+    private Pair checksubstitution(String expression)
     {
-        String checkStr = "$x =";
+        Pair failurePair = new Pair("", "");
+        String variableName = "";
 
-        if (expression.length() >= 5 && expression.substring(0, 4).equals(checkStr)) return true;
+        if(expression.length() < 6 || expression.charAt(0) != '$') 
+        {
+            return failurePair;
+        }
 
-        return false;
+        int i=1;
+        for(; i<expression.length(); i++)
+        {
+            if(expression.charAt(i) == ' ')
+            {
+                break;
+            }
+            variableName += expression.charAt(i);
+        }
+
+        if((i+4 > expression.length()) || (expression.charAt(i+1) != '=')  || (expression.charAt(i+2) != ' ')) return failurePair;
+
+        return new Pair(variableName, expression.substring(i+3));
     }
 
-    private static boolean checkBracket(String expression)
+    private boolean checkBracket(String expression)
     {
         Stack<Character> STACK = new Stack<>();
 
@@ -373,7 +392,7 @@ public class Calculator {
  
     }
 
-    private static boolean checkStrArrangemnet(String expression) // 피연산자와 연산자가 제대로 떨어져 있는지 확인하는 함수입니다
+    private boolean checkStrArrangemnet(String expression) // 피연산자와 연산자가 제대로 떨어져 있는지 확인하는 함수입니다
     {
         StringBuilder sb = new StringBuilder(expression);
 
@@ -411,7 +430,7 @@ public class Calculator {
     }
 
 
-    private static boolean check_Operand_Operator_Char(String expression)
+    private boolean check_Operand_Operator_Char(String expression)
     {
         for(int i=0; i< expression.length(); i++)
         {
@@ -447,7 +466,7 @@ public class Calculator {
         return true;
     }
 
-    private static double check_Range_In_Perform(double num) throws ErrorHandler{
+    private double check_Range_In_Perform(double num) throws ErrorHandler{
         if (num >= -Double.MAX_VALUE && num <= Double.MAX_VALUE) {
             return num;
         }else{
@@ -456,11 +475,13 @@ public class Calculator {
         }
     }
 
-    private static double check_Range_Result(double result) throws ErrorHandler{
+    private double check_Range_Result(double result) throws ErrorHandler{
         if (result >= -Double.MAX_VALUE && result <= Double.MAX_VALUE) {
             return result;
         }else{
             throw new ErrorHandler(ErrorType.ResultValueOutofBound_error);
         }
     }
+
+
 }
