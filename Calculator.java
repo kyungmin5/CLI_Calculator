@@ -49,6 +49,8 @@ public class Calculator {
         int isOperandShouldMinus = 1;
         boolean isDollarX = false;
 
+        Operator operator = new Operator();
+
         try {
             for (int i = 0; i < expression.length(); i++) {
                 char currentChar = expression.charAt(i);
@@ -101,7 +103,7 @@ public class Calculator {
 
                     numbers.push(xValue * isOperandShouldMinus);
                     isOperandShouldMinus = 1;
-                }else if (isOperator(currentChar)) {
+                }else if (operator.isOperator(currentChar)) {
                     // 연산자 우선순위를 고려하여 스택에 push
                     if (currentChar == '-' && i + 1 < expression.length() && (Character.isDigit(expression.charAt(i + 1)) || expression.charAt(i + 1) == '(' || expression.charAt(i + 1) == '_' || expression.charAt(i + 1) == '$')) {
                         // 이게 딱 음수 부호 피연산자의 형태. 이게 아니면 모두 연산자 처리한다
@@ -110,7 +112,7 @@ public class Calculator {
 
                         for (int index = i - 1; index >= 0; index--) {
                             if (expression.charAt(index) != ' ') {
-                                if (!isOperator(expression.charAt(index))) {
+                                if (!operator.isOperator(expression.charAt(index))) {
                                     isOperator = true;
                                 }
 
@@ -134,8 +136,10 @@ public class Calculator {
                         double a = numbers.pop();
                         check_Range_In_Perform(a);
                         check_Range_In_Perform(b);
-                        char operator = operators.pop();
-                        double result = performOperation(a, b, operator);
+                        char operatorChar = operators.pop();
+                        OperatorType operatorType = Operator.getType(operatorChar);
+                        operator = new Operator(operatorType, a, b);
+                        double result = operator.run(); //performOperation(a, b, operatorChar);
                         check_Range_In_Perform(result);
                         numbers.push(result * isOperandShouldMinus);
                         // previousValue = result  * isOperandShouldMinus;
@@ -164,13 +168,14 @@ public class Calculator {
 
                 check_Range_In_Perform(a);
                 check_Range_In_Perform(b);
-                char operator = operators.pop();
-                double result = performOperation(a, b, operator);
+                char operatorChar = operators.pop();
+                OperatorType operatorType = Operator.getType(operatorChar);
+                operator = new Operator(operatorType, a, b);
+                double result = operator.run();
                 check_Range_In_Perform(result);
                 numbers.push(result * isOperandShouldMinus);
                 // 직전값 업데이트
                 // previousValue = result * isOperandShouldMinus;
-
                 isOperandShouldMinus = 1;
             }
 
@@ -195,16 +200,6 @@ public class Calculator {
         return finalResult;
     }
 
-    private static boolean isOperator(char c) {
-        try {
-            OperatorType.fromString(Character.toString(c));
-        } catch (ErrorHandler e) {
-            return false;
-        }
-        return true;
-    }
-
-
     private static int precedence(char operator) {
         if (operator == '+' || operator == '-') {
             return 1;
@@ -214,26 +209,6 @@ public class Calculator {
             return 3;
         }
         return 0; // 다른 문자의 경우
-    }
-
-    private static double performOperation(double a, double b, char operator) throws ErrorHandler {
-        switch (operator) {
-            case '+':
-                return a + b;
-            case '-':
-                return a - b;
-            case '*':
-                return a * b;
-            case '/':
-                if (b == 0) {
-                    throw new ErrorHandler(ErrorType.DivideZero_error);
-                }
-                return a / b;
-            case '^':
-                return Math.pow(a, b);
-            default:
-                throw new ErrorHandler(ErrorType.InValidOperator_error);
-        }
     }
 
     private static Object[] preProcessing(String expression) throws ErrorHandler // 
