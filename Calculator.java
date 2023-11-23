@@ -136,13 +136,10 @@ public class Calculator {
 
                         double b = numbers.pop();
                         double a = numbers.pop();
-                        // check_Range_In_Perform(a);
-                        // check_Range_In_Perform(b);
                         char operatorChar = operators.pop();
                         OperatorType operatorType = Operator.getType(operatorChar);
                         operator = new Operator(operatorType, a, b);
-                        double result = operator.run(); //performOperation(a, b, operatorChar);
-                        // check_Range_In_Perform(result);
+                        double result = operator.run();
                         validationManager.checkRangeInPerform(a, b, result);
                         numbers.push(result * isOperandShouldMinus);
                         // previousValue = result  * isOperandShouldMinus;
@@ -169,13 +166,10 @@ public class Calculator {
                 double b = numbers.pop();
                 double a = numbers.pop();
 
-                // check_Range_In_Perform(a);
-                // check_Range_In_Perform(b);
                 char operatorChar = operators.pop();
                 OperatorType operatorType = Operator.getType(operatorChar);
                 operator = new Operator(operatorType, a, b);
                 double result = operator.run();
-                // check_Range_In_Perform(result);
                 validationManager.checkRangeInPerform(a, b, result);
                 numbers.push(result * isOperandShouldMinus);
                 // 직전값 업데이트
@@ -193,7 +187,7 @@ public class Calculator {
 
         // 최종 결과 반환
         DecimalFormat df = new DecimalFormat("#.######");
-        check_Range_Result(finalResult);
+        // check_Range_Result(finalResult);
 
                 if(finalResult == (int) finalResult){
                     finalResult = (int)finalResult;
@@ -389,7 +383,6 @@ public class Calculator {
           
     }
 
-
     private static boolean check_Operand_Operator_Char(String expression)
     {
         for(int i=0; i< expression.length(); i++)
@@ -426,19 +419,11 @@ public class Calculator {
         return true;
     }
 
-    // private static double check_Range_In_Perform(double num) throws ErrorHandler{
-    //     if (num >= -Double.MAX_VALUE && num <= Double.MAX_VALUE) {
-    //         return num;
+    // private static double check_Range_Result(double result) throws ErrorHandler{
+    //     if (result >= -Double.MAX_VALUE && result <= Double.MAX_VALUE) {
+    //         return result;
     //     }else{
-    //         throw new ErrorHandler(ErrorType.TempValueOutofBound_error);
+    //         throw new ErrorHandler(ErrorType.ResultValueOutofBound_error);
     //     }
     // }
-
-    private static double check_Range_Result(double result) throws ErrorHandler{
-        if (result >= -Double.MAX_VALUE && result <= Double.MAX_VALUE) {
-            return result;
-        }else{
-            throw new ErrorHandler(ErrorType.ResultValueOutofBound_error);
-        }
-    }
 }

@@ -12,6 +12,6 @@ public class ValidationManager {
     if (isValidLhs && isValidRhs && isValidResult) {
       return;
     }
-    throw new ErrorHandler(ErrorType.TempValueOutofBound_error);
+    throw new ErrorHandler(ErrorType.VALUE_OUT_OF_BOUND_ERROR);
   }
 }
