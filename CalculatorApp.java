@@ -33,24 +33,25 @@ public class CalculatorApp {
                     System.out.println(StaticVariable.exitString);
                     return true;
                 default:
-                    throw new ErrorHandler(ErrorType.Command_error);
+                    throw new ErrorHandler(ErrorType.COMMAND_ERROR);
             }
             return false;
     }
 
     // 계산 기능
     private static void generateCalculator() {
+        Calculator calculator = new Calculator();
+
         while(true) {
             System.out.print(StaticVariable.calculatorString);
             String expression = scanner.nextLine();
-            // System.out.println();
 
             if (expression.equals("q")) {
                 break;
             }
 
             try {
-                double result = Calculator.calculate(expression);
+                double result = calculator.calculate(expression);
                 if (result == (int) result) {
                     System.out.println((int) result);
                 } else {
@@ -63,8 +64,5 @@ public class CalculatorApp {
                 e.PrintError();
             }   
         }
-
-        Calculator.setPreviousValue(Double.NaN); 
-        Calculator.setXValue(Double.NaN);
     }
 }

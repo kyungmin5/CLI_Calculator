@@ -4,36 +4,48 @@ import java.util.Stack;
 // import java.util.Scanner;
 
 public class Calculator {
-    private static double previousValue = Double.NaN;
-    private static double xValue = Double.NaN; // 초기에는 값이 없음을 나타내기 위해 NaN 사용
-
-    private static ValidationManager validationManager = new ValidationManager();
-
-    public static double getXValue() {
-        return xValue;
+    class Pair {
+        private String x;
+        private String y;
+    
+        Pair(String x, String y) {
+            this.x = x;
+            this.y = y;
+        }
+    
+        public String first(){
+            return x;
+        }
+    
+        public String second(){
+            return y;
+        }
     }
+    
+    private double previousValue = Double.NaN;
+    private UserVariable variable = new UserVariable();
+    private ValidationManager validationManager = new ValidationManager();
 
-    public static void setXValue(double value) {
-        xValue = value;
-    }
-
-    public static void setPreviousValue(double value) {
+    // 직접 값 업데이트
+    public void setPreviousValue(double value) {
         previousValue = value;
     }
-    public static double calculate(String expression) throws ErrorHandler {
+
+    public double calculate(String expression) throws ErrorHandler {
 
         Object[] RESULT = preProcessing(expression);
         //expression = expression.replaceAll(" ", ""); // 입력 문자열에서 공백 제거
 
-        boolean isSubstitution =(boolean)RESULT[1]; // 대입식인지 그냥 수식인지를 판별
-        expression = (String)RESULT[0]; // 수식이면 수식이 ^에 대해 () 처리만 하고 나오고, 대입이라면 = 오른쪽 부분만이 ^처리 후에 나오게 된다
+        boolean isSubstitution =(boolean)RESULT[0]; // 대입식인지 그냥 수식인지를 판별
+        expression = (String)RESULT[1]; // 수식이면 수식이 ^에 대해 () 처리만 하고 나오고, 대입이라면 = 오른쪽 부분만이 ^처리 후에 나오게 된다
+        String variableName = (String)RESULT[2];
         // 결국, 수식이면 계산 한 값을 반환하면 되는 것이고, 대입이라면 계산 한 값을 x에 대입하면 되는 것이다
 
         double result = RecursiveCaluculate(expression);
 
         if (isSubstitution) {
             // 대입식인 경우
-            xValue = result;
+            variable.setVariable(variableName, result);
         }
 
         // 직전 값에 대입하는 식
@@ -41,7 +53,7 @@ public class Calculator {
 
     }
 
-    private static double RecursiveCaluculate(String expression) throws ErrorHandler
+    private double RecursiveCaluculate(String expression) throws ErrorHandler
     {
         Stack<Double> numbers = new Stack<>();
         Stack<Character> operators = new Stack<>();
@@ -94,17 +106,15 @@ public class Calculator {
                     i = j-1;  // 여기가 실제 ) 가 있는 인덱스. i를 ) 의 index로 보내버린다.
                 }else if(currentChar == '$')
                 {
-                    continue;
-                }else if(currentChar == 'x')
-                {
-                    // System.out.println(xValue);
-                    if(Double.isNaN(xValue))
+                    int index = 1;
+                    String variableName = "";
+                    for(; index + i< expression.length() && expression.charAt(index + i) != ' '; index++)
                     {
-                        throw new ErrorHandler(ErrorType.InValidOperand_error);
+                        variableName += expression.charAt(index + i);
                     }
-
-                    numbers.push(xValue * isOperandShouldMinus);
+                    numbers.push(variable.getVariable(variableName) * isOperandShouldMinus);
                     isOperandShouldMinus = 1;
+                    i = index + i;
                 }else if (operator.isOperator(currentChar)) {
                     // 연산자 우선순위를 고려하여 스택에 push
                     if (currentChar == '-' && i + 1 < expression.length() && (Character.isDigit(expression.charAt(i + 1)) || expression.charAt(i + 1) == '(' || expression.charAt(i + 1) == '_' || expression.charAt(i + 1) == '$')) {
@@ -121,8 +131,6 @@ public class Calculator {
                                 break;
                             }
                         }
-
-
                         if(!isOperator) // - 바로 앞에 또 연산자가 있어서 -가 부호로 사용될 수밖에 없을 떄
                         {
                             isOperandShouldMinus = -1; // 뒤에 push될 피연산자가 - 화 되야 한다는 표시를 남기고 다음으로 넘어간다
@@ -152,14 +160,13 @@ public class Calculator {
                 }else if (currentChar == '_') {
                     // 직전값이 배정되지 않았을 경우
                     if (Double.isNaN(previousValue)) {
-                        throw new ErrorHandler(ErrorType.InValidOperand_error);
+                        throw new ErrorHandler(ErrorType.INVALID_OPERAND_ERROR);
                     }
                     // '_'를 만날 때 직전값을 스택에 push
                     numbers.push(previousValue * isOperandShouldMinus);
                     isOperandShouldMinus = 1;
                 }
             }
-
 
             // 남은 연산자를 모두 처리
             while (!operators.isEmpty()) {
@@ -179,10 +186,10 @@ public class Calculator {
 
             finalResult = numbers.pop();
 
-            if(!numbers.isEmpty()) throw new ErrorHandler(ErrorType.InValidExperssion_error);
+            if(!numbers.isEmpty()) throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
 
         } catch (EmptyStackException e) {
-            throw new ErrorHandler(ErrorType.InValidExperssion_error);
+            throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
         }
 
         // 최종 결과 반환
@@ -198,52 +205,34 @@ public class Calculator {
         return finalResult;
     }
 
-    private static int precedence(char operator) {
-        if (operator == '+' || operator == '-') {
-            return 1;
-        } else if (operator == '*' || operator == '/') {
-            return 2;
-        }else if (operator == '^') {
-            return 3;
-        }
-        return 0; // 다른 문자의 경우
+    private int precedence(char operator) throws ErrorHandler{
+        return Operator.getType(operator).getPriority();
     }
 
-    private static Object[] preProcessing(String expression) throws ErrorHandler // 
-    {   // 반환은, ^를 위한 괄호 처리가 완료된 문자열과, 식이 대입식인지 아닌지 저장하는 boolean이다.
-        if(expression.length() > 200) throw new ErrorHandler(ErrorType.Length_error);
+    private Object[] preProcessing(String rawexpression) throws ErrorHandler {   // 반환은, ^를 위한 괄호 처리가 완료된 문자열과, 식이 대입식인지 아닌지 저장하는 boolean이다.
+        if(rawexpression.length() > 200) throw new ErrorHandler(ErrorType.LENGTH_ERROR);
 
-        expression = expression.trim();
+        rawexpression = rawexpression.trim();
 
-        boolean isSubstitution = false;
+        boolean isSubstitution = true;
+        Pair resultPair = checksubstitution(rawexpression);
+        String variableName = resultPair.first();
+        String expression = resultPair.second();
 
-        if(checksubstitution(expression))
+        if(variableName == "") // 대입 식이 아님
         {
-            isSubstitution = true;
-            int index = 0;
-            while(expression.charAt(index) != '=')
-            {
-                index++;
-            }
+            isSubstitution = false;
+            expression = rawexpression;
+        }
 
+        validationManager.checkBracketPair(expression);
 
-            expression = expression.substring(index+1);
-            expression = expression.trim();
-        }   
-
-        if(!checkBracket(expression)) throw new ErrorHandler(ErrorType.Bracket_error);
-
-        if(!check_Operand_Operator_Char(expression)) throw new ErrorHandler(ErrorType.InValidExperssion_error);
-
-        if(!checkStrArrangemnet(expression)) throw new ErrorHandler(ErrorType.InValidExperssion_error); // 이부분은 피연산자와 연산자가 반드시 떨어져 있는지 아닌지를 판단하는 부분입니다
-                                                                                                           // 추후 요구사항에 지우면 됩니다
         expression = optimizeForPower(expression);
 
-        return new Object[] {expression, isSubstitution};
+        return new Object[] {isSubstitution, expression, variableName};
     }
 
-
-    private static String optimizeForPower(String expression)
+    private String optimizeForPower(String expression)
     {
         StringBuilder sb = new StringBuilder(expression);
 
@@ -306,47 +295,35 @@ public class Calculator {
             }
         }
 
-        // System.out.println(sb);
         return sb.toString();
     }
 
-    private static boolean checksubstitution(String expression)
+    private Pair checksubstitution(String expression)
     {
-        String checkStr = "$x =";
+        Pair failurePair = new Pair("", "");
+        String variableName = "";
 
-        if (expression.length() >= 5 && expression.substring(0, 4).equals(checkStr)) return true;
-
-        return false;
-    }
-
-    private static boolean checkBracket(String expression)
-    {
-        Stack<Character> STACK = new Stack<>();
-
-        for(int i=0; i< expression.length(); i++)
+        if(expression.length() < 6 || expression.charAt(0) != '$') 
         {
-            if(expression.charAt(i) == '(')
-            {
-                STACK.push( '(');
-            }else if(expression.charAt(i) == ')')
-            {
-                if(STACK.empty()) return false;
+            return failurePair;
+        }
 
-                STACK.pop();
+        int i=1;
+        for(; i<expression.length(); i++)
+        {
+            if(expression.charAt(i) == ' ')
+            {
+                break;
             }
+            variableName += expression.charAt(i);
         }
 
-        if(STACK.empty())
-        {
-            return true;
-        }else
-        {
-            return false;
-        }
- 
+        if((i+4 > expression.length()) || (expression.charAt(i+1) != '=')  || (expression.charAt(i+2) != ' ')) return failurePair;
+
+        return new Pair(variableName, expression.substring(i+3));
     }
 
-    private static boolean checkStrArrangemnet(String expression) // 피연산자와 연산자가 제대로 떨어져 있는지 확인하는 함수입니다
+    private boolean checkStrArrangemnet(String expression) // 피연산자와 연산자가 제대로 떨어져 있는지 확인하는 함수입니다
     {
         StringBuilder sb = new StringBuilder(expression);
 
@@ -382,48 +359,4 @@ public class Calculator {
         return isTopOperator != 1;
           
     }
-
-    private static boolean check_Operand_Operator_Char(String expression)
-    {
-        for(int i=0; i< expression.length(); i++)
-        {
-            if(expression.charAt(i) == '+' || expression.charAt(i) == '-'
-                    ||expression.charAt(i) == '*' ||expression.charAt(i) == '/'
-                    ||expression.charAt(i) == '^' ||expression.charAt(i) == '(' ||expression.charAt(i) == ')' )
-            {
-                continue;
-            }else if(expression.charAt(i) >= '0' && expression.charAt(i) <= '9')
-            {
-                continue;
-            }else if(expression.charAt(i) == '_' || expression.charAt(i) == ' ')
-            {
-                continue;
-            }else if(expression.charAt(i) == '$' && (i+1) < expression.length() && expression.charAt(i+1) == 'x')
-            {
-                continue;
-            }else if(expression.charAt(i) == 'x' && i>0 && expression.charAt(i-1) == '$')
-            {
-                continue;
-            }else if(expression.charAt(i) == '.' && i>0 && (i+1) < expression.length() &&
-                    expression.charAt(i-1) >= '0' && expression.charAt(i-1) <= '9' && expression.charAt(i+1) >= '0' && expression.charAt(i+1) <= '9')
-
-            {
-                continue;
-            }else
-            {
-                return false;
-            }
-
-        }
-
-        return true;
-    }
-
-    // private static double check_Range_Result(double result) throws ErrorHandler{
-    //     if (result >= -Double.MAX_VALUE && result <= Double.MAX_VALUE) {
-    //         return result;
-    //     }else{
-    //         throw new ErrorHandler(ErrorType.ResultValueOutofBound_error);
-    //     }
-    // }
 }
