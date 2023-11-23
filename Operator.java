@@ -15,6 +15,7 @@ public class Operator {
     this.rhs = rhs;
   }
 
+  // 실제 계산 진행
   public double run() throws ErrorHandler {
     switch (this.type) {
       case PLUS:

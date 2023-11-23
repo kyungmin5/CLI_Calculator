@@ -7,6 +7,8 @@ public class Calculator {
     private static double previousValue = Double.NaN;
     private static double xValue = Double.NaN; // 초기에는 값이 없음을 나타내기 위해 NaN 사용
 
+    private static ValidationManager validationManager = new ValidationManager();
+
     public static double getXValue() {
         return xValue;
     }
@@ -134,13 +136,14 @@ public class Calculator {
 
                         double b = numbers.pop();
                         double a = numbers.pop();
-                        check_Range_In_Perform(a);
-                        check_Range_In_Perform(b);
+                        // check_Range_In_Perform(a);
+                        // check_Range_In_Perform(b);
                         char operatorChar = operators.pop();
                         OperatorType operatorType = Operator.getType(operatorChar);
                         operator = new Operator(operatorType, a, b);
                         double result = operator.run(); //performOperation(a, b, operatorChar);
-                        check_Range_In_Perform(result);
+                        // check_Range_In_Perform(result);
+                        validationManager.checkRangeInPerform(a, b, result);
                         numbers.push(result * isOperandShouldMinus);
                         // previousValue = result  * isOperandShouldMinus;
 
@@ -166,13 +169,14 @@ public class Calculator {
                 double b = numbers.pop();
                 double a = numbers.pop();
 
-                check_Range_In_Perform(a);
-                check_Range_In_Perform(b);
+                // check_Range_In_Perform(a);
+                // check_Range_In_Perform(b);
                 char operatorChar = operators.pop();
                 OperatorType operatorType = Operator.getType(operatorChar);
                 operator = new Operator(operatorType, a, b);
                 double result = operator.run();
-                check_Range_In_Perform(result);
+                // check_Range_In_Perform(result);
+                validationManager.checkRangeInPerform(a, b, result);
                 numbers.push(result * isOperandShouldMinus);
                 // 직전값 업데이트
                 // previousValue = result * isOperandShouldMinus;
@@ -422,14 +426,13 @@ public class Calculator {
         return true;
     }
 
-    private static double check_Range_In_Perform(double num) throws ErrorHandler{
-        if (num >= -Double.MAX_VALUE && num <= Double.MAX_VALUE) {
-            return num;
-        }else{
-            throw new ErrorHandler(ErrorType.TempValueOutofBound_error);
-
-        }
-    }
+    // private static double check_Range_In_Perform(double num) throws ErrorHandler{
+    //     if (num >= -Double.MAX_VALUE && num <= Double.MAX_VALUE) {
+    //         return num;
+    //     }else{
+    //         throw new ErrorHandler(ErrorType.TempValueOutofBound_error);
+    //     }
+    // }
 
     private static double check_Range_Result(double result) throws ErrorHandler{
         if (result >= -Double.MAX_VALUE && result <= Double.MAX_VALUE) {
