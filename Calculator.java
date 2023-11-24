@@ -62,6 +62,8 @@ public class Calculator {
         int isOperandShouldMinus = 1;
         boolean isDollarX = false;
 
+        Operator operator = new Operator();
+
         try {
             for (int i = 0; i < expression.length(); i++) {
                 char currentChar = expression.charAt(i);
@@ -111,9 +113,8 @@ public class Calculator {
                     }
                     numbers.push(variable.getVariable(variableName) * isOperandShouldMinus);
                     isOperandShouldMinus = 1;
-
                     i = index + i;
-                }else if (isOperator(currentChar)) {
+                }else if (operator.isOperator(currentChar)) {
                     // 연산자 우선순위를 고려하여 스택에 push
                     if (currentChar == '-' && i + 1 < expression.length() && (Character.isDigit(expression.charAt(i + 1)) || expression.charAt(i + 1) == '(' || expression.charAt(i + 1) == '_' || expression.charAt(i + 1) == '$')) {
                         // 이게 딱 음수 부호 피연산자의 형태. 이게 아니면 모두 연산자 처리한다
@@ -122,15 +123,13 @@ public class Calculator {
 
                         for (int index = i - 1; index >= 0; index--) {
                             if (expression.charAt(index) != ' ') {
-                                if (!isOperator(expression.charAt(index))) {
+                                if (!operator.isOperator(expression.charAt(index))) {
                                     isOperator = true;
                                 }
 
                                 break;
                             }
                         }
-
-
                         if(!isOperator) // - 바로 앞에 또 연산자가 있어서 -가 부호로 사용될 수밖에 없을 떄
                         {
                             isOperandShouldMinus = -1; // 뒤에 push될 피연산자가 - 화 되야 한다는 표시를 남기고 다음으로 넘어간다
@@ -146,8 +145,10 @@ public class Calculator {
                         double a = numbers.pop();
                         check_Range_In_Perform(a);
                         check_Range_In_Perform(b);
-                        char operator = operators.pop();
-                        double result = performOperation(a, b, operator);
+                        char operatorChar = operators.pop();
+                        OperatorType operatorType = Operator.getType(operatorChar);
+                        operator = new Operator(operatorType, a, b);
+                        double result = operator.run(); //performOperation(a, b, operatorChar);
                         check_Range_In_Perform(result);
                         numbers.push(result * isOperandShouldMinus);
                         // previousValue = result  * isOperandShouldMinus;
@@ -175,13 +176,14 @@ public class Calculator {
 
                 check_Range_In_Perform(a);
                 check_Range_In_Perform(b);
-                char operator = operators.pop();
-                double result = performOperation(a, b, operator);
+                char operatorChar = operators.pop();
+                OperatorType operatorType = Operator.getType(operatorChar);
+                operator = new Operator(operatorType, a, b);
+                double result = operator.run();
                 check_Range_In_Perform(result);
                 numbers.push(result * isOperandShouldMinus);
                 // 직전값 업데이트
                 // previousValue = result * isOperandShouldMinus;
-
                 isOperandShouldMinus = 1;
             }
 
@@ -206,16 +208,6 @@ public class Calculator {
         return finalResult;
     }
 
-    private boolean isOperator(char c) {
-        try {
-            OperatorType.fromString(Character.toString(c));
-        } catch (ErrorHandler e) {
-            return false;
-        }
-        return true;
-    }
-
-
     private int precedence(char operator) {
         if (operator == '+' || operator == '-') {
             return 1;
@@ -227,28 +219,7 @@ public class Calculator {
         return 0; // 다른 문자의 경우
     }
 
-    private double performOperation(double a, double b, char operator) throws ErrorHandler {
-        switch (operator) {
-            case '+':
-                return a + b;
-            case '-':
-                return a - b;
-            case '*':
-                return a * b;
-            case '/':
-                if (b == 0) {
-                    throw new ErrorHandler(ErrorType.DivideZero_error);
-                }
-                return a / b;
-            case '^':
-                return Math.pow(a, b);
-            default:
-                throw new ErrorHandler(ErrorType.InValidOperator_error);
-        }
-    }
-
-    private Object[] preProcessing(String rawexpression) throws ErrorHandler // 
-    {   // 반환은, ^를 위한 괄호 처리가 완료된 문자열과, 식이 대입식인지 아닌지 저장하는 boolean이다.
+    private Object[] preProcessing(String rawexpression) throws ErrorHandler{   // 반환은, ^를 위한 괄호 처리가 완료된 문자열과, 식이 대입식인지 아닌지 저장하는 boolean이다.
         if(rawexpression.length() > 200) throw new ErrorHandler(ErrorType.Length_error);
 
         rawexpression = rawexpression.trim();

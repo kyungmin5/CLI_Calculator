@@ -1,10 +1,14 @@
+import java.util.Arrays;
+import java.util.List;
+
 public enum OperatorType {
     PLUS("+", 0),
     MINUS("-", 0),
     MULTIPLATION("*", 1),
     DIVISION("/", 1),
-    POWER("^", 2),
-    ;
+    POWER("^", 2);
+
+    public static List<String> operators = Arrays.asList(Arrays.asList(OperatorType.values()).stream().map(type -> type.getOperator()).toArray(String[]::new));
 
     private String operator;
     private int priority;
@@ -14,20 +18,11 @@ public enum OperatorType {
         this.priority = priority;
     }
 
-    public static OperatorType fromString(String str) throws ErrorHandler {
-        switch (str) {
-            case "+":
-                return OperatorType.PLUS;
-            case "-":
-                return OperatorType.MINUS;
-            case "*":
-                return OperatorType.MULTIPLATION;
-            case "/":
-                return OperatorType.DIVISION;
-            case "^":
-                return OperatorType.POWER;
-            default:
-                throw new ErrorHandler(ErrorType.InValidOperator_error);
-        }
+    public String getOperator() {
+        return operator;
+    }
+
+    public int getPriority() {
+        return priority;
     }
 }
