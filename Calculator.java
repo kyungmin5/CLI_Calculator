@@ -1,15 +1,24 @@
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.EmptyStackException;
 import java.util.Stack;
 // import java.util.Scanner;
 
-class Pair {
+class Tuple {
         private String x;
         private String y;
+        private ArrayList<String> z = null;
+
     
-        Pair(String x, String y) {
+        Tuple(String x, String y) {
             this.x = x;
             this.y = y;
+        }
+
+        Tuple(String x, String y, ArrayList<String> z) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
         }
     
         public String first(){
@@ -19,11 +28,17 @@ class Pair {
         public String second(){
             return y;
         }
+
+        public ArrayList<String> third(){
+            return z;
+        }
     }
 
 public class Calculator {
     private double previousValue = Double.NaN;
     private UserVariable variable = new UserVariable();
+    private UserFunction function = new UserFunction();
+
     private ValidationManager validationManager = new ValidationManager();
 
     // 직접 값 업데이트
@@ -36,20 +51,32 @@ public class Calculator {
         Object[] RESULT = preProcessing(expression);
         //expression = expression.replaceAll(" ", ""); // 입력 문자열에서 공백 제거
 
-        boolean isSubstitution =(boolean)RESULT[0]; // 대입식인지 그냥 수식인지를 판별
+        int isSubstitution =(int)RESULT[0]; // 대입식인지 그냥 수식인지를 판별
         expression = (String)RESULT[1]; // 수식이면 수식이 ^에 대해 () 처리만 하고 나오고, 대입이라면 = 오른쪽 부분만이 ^처리 후에 나오게 된다
         String variableName = (String)RESULT[2];
+        ArrayList<String> paras = (ArrayList<String>)RESULT[3];
+
         // 결국, 수식이면 계산 한 값을 반환하면 되는 것이고, 대입이라면 계산 한 값을 x에 대입하면 되는 것이다
 
-        double result = RecursiveCaluculate(expression);
-
-        if (isSubstitution) {
-            // 대입식인 경우
+        if (isSubstitution == 1) {
+            // 변수 대입식인 경우
+            double result = RecursiveCaluculate(expression);
             variable.setVariable(variableName, result);
+            return result;
+        }else if(isSubstitution == 2)
+        {
+            // 함수 대입식인 경우
+            function.setFunction(variable, previousValue, variableName, paras, expression);
+            return Double.NaN;
+        }else
+        {
+            // 대입식이 아닌 경우
+            double result = RecursiveCaluculate(expression);
+            return result;
         }
 
         // 직전 값에 대입하는 식
-        return result;
+        
 
     }
 
@@ -214,22 +241,31 @@ public class Calculator {
 
         rawexpression = rawexpression.trim();
 
-        boolean isSubstitution = true;
-        Pair resultPair = checksubstitution(rawexpression);
+        int isSubstitution = 0; // 0 : 대입식 아님, 1 : 변수 대입식임, 2 : 함수 대입식임
+        Tuple resultPair = checksubstitution(rawexpression);
         String variableName = resultPair.first();
         String expression = resultPair.second();
+        ArrayList<String> paras = resultPair.third();
 
         if(variableName == "") // 대입 식이 아님
         {
-            isSubstitution = false;
+            isSubstitution = 0;
             expression = rawexpression;
+        }else if(paras == null) // 이 경우 변수 대입
+        {
+            isSubstitution = 1;
+
+        }else if(paras != null) // 이 경우 함수를 대입
+        {
+            isSubstitution = 2;
+
         }
 
         validationManager.checkBracketPair(expression);
 
         expression = optimizeForPower(expression);
 
-        return new Object[] {isSubstitution, expression, variableName};
+        return new Object[] {isSubstitution, expression, variableName, paras};
     }
 
     private String optimizeForPower(String expression)
@@ -298,29 +334,83 @@ public class Calculator {
         return sb.toString();
     }
 
-    private Pair checksubstitution(String expression)
+    private Tuple checksubstitution(String expression)
     {
-        Pair failurePair = new Pair("", "");
-        String variableName = "";
+        Tuple failurePair = new Tuple("", "");
 
-        if(expression.length() < 6 || expression.charAt(0) != '$') 
+        if(expression.length() < 1) return failurePair;
+
+        if(expression.charAt(0) == '$')
         {
+            String variableName = "";
+            int i=1;
+            for(; i<expression.length(); i++)
+            {
+                if(expression.charAt(i) == ' ')
+                {
+                    break;
+                }
+                variableName += expression.charAt(i);
+            }
+
+            if((i+4 > expression.length()) || (expression.charAt(i+1) != '=')  || (expression.charAt(i+2) != ' ')) return failurePair;
+            return new Tuple(variableName, expression.substring(i+3));
+
+        }else if(expression.charAt(0) == '@')
+        {
+            String functionName = "";
+            ArrayList<String> para = new ArrayList<String>();
+            int i=1;
+            for(; i<expression.length(); i++)
+            {
+                if(expression.charAt(i) == '[')
+                {
+                    break;
+                }
+                functionName += expression.charAt(i);
+            }
+
+            if(i + 1 == expression.length())
+            {
+                return failurePair;
+            }
+
+            i++;
+            String paraString = "";
+            for(; i<expression.length(); i++)
+            {
+                if(expression.charAt(i) == ']')
+                {
+                    break;
+                }
+                paraString += expression.charAt(i);
+            }
+
+            if(i + 1 == expression.length())
+            {
+                return failurePair;
+            }
+            if((i+5 > expression.length()) || (expression.charAt(i+1) != ' ') || (expression.charAt(i+2) != '=')  || (expression.charAt(i+3) != ' ')) return failurePair;
+
+            // 여기까지 매개변수가 담겨있는 문자열 뺴내기
+
+            String[] paras = paraString.split(",");
+            for (String string : paras) {
+                string.trim();
+                if(string.length() < 2 || string.charAt(0) != '%')
+                {
+                    return failurePair;
+                }
+                para.add(string.substring(1));
+            }
+
+            return new Tuple(functionName, expression.substring(i+4), para);
+
+        }else{
             return failurePair;
         }
 
-        int i=1;
-        for(; i<expression.length(); i++)
-        {
-            if(expression.charAt(i) == ' ')
-            {
-                break;
-            }
-            variableName += expression.charAt(i);
-        }
-
-        if((i+4 > expression.length()) || (expression.charAt(i+1) != '=')  || (expression.charAt(i+2) != ' ')) return failurePair;
-
-        return new Pair(variableName, expression.substring(i+3));
+        
     }
 
     private boolean checkStrArrangemnet(String expression) // 피연산자와 연산자가 제대로 떨어져 있는지 확인하는 함수입니다

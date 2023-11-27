@@ -7,12 +7,12 @@ class FunctionForm {
         private HashMap<String, Double> variableMap = new HashMap<String,Double>();
         private String functionBody;
     
-        FunctionForm(ArrayList<String> para, String functionBody, UserVariable variables) throws ErrorHandler {
+        FunctionForm(ArrayList<String> para, String functionBody, UserVariable variables, Double previousValue) throws ErrorHandler {
             this.varaibleIndex = para;
-            ChangeExpression(functionBody, variables);
+            ChangeExpression(functionBody, variables, previousValue);
         }
 
-        private void ChangeExpression(String expression, UserVariable userVariables) throws ErrorHandler
+        private void ChangeExpression(String expression, UserVariable userVariables, Double previousValue) throws ErrorHandler
         {
             Set<String> variables = userVariables.getVarableSets();
 
@@ -22,6 +22,12 @@ class FunctionForm {
                 {
                     expression = expression.replaceAll(newstring, userVariables.getVariable(string).toString());
                 }
+            }
+
+            String newstring =  "_" + "\\b";
+            if(expression.contains(newstring))
+            {
+                expression = expression.replaceAll(newstring, previousValue.toString());
             }
             this.functionBody = expression;
         }
@@ -67,9 +73,9 @@ public class UserFunction {
        }
     }
 
-    public void setFunction(UserVariable userVariables , String functionName, ArrayList<String> functionPara, String functionBody) throws ErrorHandler
+    public void setFunction(UserVariable userVariables, Double previousValue , String functionName, ArrayList<String> functionPara, String functionBody) throws ErrorHandler
     {
-        functionMap.put(functionName, new FunctionForm(functionPara, functionBody, userVariables));
+        functionMap.put(functionName, new FunctionForm(functionPara, functionBody, userVariables, previousValue));
     }
 
 
