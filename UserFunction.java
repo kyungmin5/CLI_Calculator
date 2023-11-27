@@ -94,7 +94,52 @@ public class UserFunction {
     {
        if(functionMap.containsKey(functionName))
        {
-            return functionMap.get(functionName).getFunction(paraList);
+            String newFunctionBody =  functionMap.get(functionName).getFunction(paraList);
+            System.out.println("[newFunctionBody]\n" + newFunctionBody);
+
+
+            while(newFunctionBody.contains("@"))
+            {
+                int startIndex = newFunctionBody.indexOf("@");
+                int index = 1;
+                String newfunctionName = "";
+                for(; (index + startIndex < newFunctionBody.length()) && (newFunctionBody.charAt(index + startIndex) != '['); index++)
+                {
+                    newfunctionName += newFunctionBody.charAt(index + startIndex);
+                }
+
+                index = index + 1;
+                String paraString = "";
+                for( ; index + startIndex<newFunctionBody.length(); index++)
+                {
+                    if(newFunctionBody.charAt(index + startIndex) == ']')
+                    {
+                        break;
+                    }
+                    paraString += newFunctionBody.charAt(index + startIndex);
+                }
+
+                ArrayList<Double> para = new ArrayList<Double>();
+                String[] paras = paraString.split(",");
+                if(paras[0].length() != 0)
+                {
+                    for (String string : paras) {
+                        string = string.trim();
+                        para.add(Double.valueOf(string));
+                    }
+                }
+                
+                String functionExpression = functionMap.get(newfunctionName).getFunction(para);
+                String before = newFunctionBody.substring(0, startIndex);
+                String after = newFunctionBody.substring(index + startIndex + 1);
+                newFunctionBody =  before + functionExpression + after;
+
+                System.out.println("[newFunctionBody]\n" + newFunctionBody);
+
+            }
+
+            return newFunctionBody;
+
        }else{
             System.err.println("function name doesnt match");
             throw new ErrorHandler(ErrorType.INVALID_OPERAND_ERROR);
