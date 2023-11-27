@@ -7,13 +7,7 @@ public class StaticVariable {
     2. 계산하기
     3. 프로그램 종료
     """;
-
-  // public String menuString = """
-
-  //   메뉴를 입력하세요
-  //   1 : 설명서 띄우기 || 2 : 계산하기 || 3 : 종료하기
-  //   입력 : """;
-
+    
   public static String scriptString = """
     
   계산기의 사용 규칙 설명서입니다.
