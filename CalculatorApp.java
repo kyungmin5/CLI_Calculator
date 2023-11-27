@@ -33,7 +33,7 @@ public class CalculatorApp {
                     System.out.println(StaticVariable.exitString);
                     return true;
                 default:
-                    throw new ErrorHandler(ErrorType.Command_error);
+                    throw new ErrorHandler(ErrorType.COMMAND_ERROR);
             }
             return false;
     }

@@ -1,8 +1,5 @@
-import java.text.DecimalFormat;
-import java.util.EmptyStackException;
+
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
 
 public class UserVariable {
     private HashMap<String, Double> variableMap = new HashMap<String,Double>();
@@ -13,7 +10,7 @@ public class UserVariable {
        {
             return variableMap.get(variableName);
        }else{
-            throw new ErrorHandler(ErrorType.InValidOperand_error);
+            throw new ErrorHandler(ErrorType.INVALID_OPERAND_ERROR);
        }
     }
 

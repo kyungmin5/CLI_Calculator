@@ -2,11 +2,11 @@ import java.util.Arrays;
 import java.util.List;
 
 public enum OperatorType {
-    PLUS("+", 0),
-    MINUS("-", 0),
-    MULTIPLATION("*", 1),
-    DIVISION("/", 1),
-    POWER("^", 2);
+    PLUS("+", 1),
+    MINUS("-", 1),
+    MULTIPLATION("*", 2),
+    DIVISION("/", 2),
+    POWER("^", 3);
 
     public static List<String> operators = Arrays.asList(Arrays.asList(OperatorType.values()).stream().map(type -> type.getOperator()).toArray(String[]::new));
 

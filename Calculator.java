@@ -4,7 +4,6 @@ import java.util.Stack;
 // import java.util.Scanner;
 
 public class Calculator {
-
     class Pair {
         private String x;
         private String y;
@@ -22,14 +21,16 @@ public class Calculator {
             return y;
         }
     }
-
     
     private double previousValue = Double.NaN;
     private UserVariable variable = new UserVariable();
+    private ValidationManager validationManager = new ValidationManager();
 
+    // 직접 값 업데이트
     public void setPreviousValue(double value) {
         previousValue = value;
     }
+
     public double calculate(String expression) throws ErrorHandler {
 
         Object[] RESULT = preProcessing(expression);
@@ -143,13 +144,11 @@ public class Calculator {
 
                         double b = numbers.pop();
                         double a = numbers.pop();
-                        check_Range_In_Perform(a);
-                        check_Range_In_Perform(b);
                         char operatorChar = operators.pop();
                         OperatorType operatorType = Operator.getType(operatorChar);
                         operator = new Operator(operatorType, a, b);
-                        double result = operator.run(); //performOperation(a, b, operatorChar);
-                        check_Range_In_Perform(result);
+                        double result = operator.run();
+                        validationManager.checkRangeInPerform(a, b, result);
                         numbers.push(result * isOperandShouldMinus);
                         // previousValue = result  * isOperandShouldMinus;
 
@@ -161,7 +160,7 @@ public class Calculator {
                 }else if (currentChar == '_') {
                     // 직전값이 배정되지 않았을 경우
                     if (Double.isNaN(previousValue)) {
-                        throw new ErrorHandler(ErrorType.InValidOperand_error);
+                        throw new ErrorHandler(ErrorType.INVALID_OPERAND_ERROR);
                     }
                     // '_'를 만날 때 직전값을 스택에 push
                     numbers.push(previousValue * isOperandShouldMinus);
@@ -174,13 +173,11 @@ public class Calculator {
                 double b = numbers.pop();
                 double a = numbers.pop();
 
-                check_Range_In_Perform(a);
-                check_Range_In_Perform(b);
                 char operatorChar = operators.pop();
                 OperatorType operatorType = Operator.getType(operatorChar);
                 operator = new Operator(operatorType, a, b);
                 double result = operator.run();
-                check_Range_In_Perform(result);
+                validationManager.checkRangeInPerform(a, b, result);
                 numbers.push(result * isOperandShouldMinus);
                 // 직전값 업데이트
                 // previousValue = result * isOperandShouldMinus;
@@ -189,15 +186,15 @@ public class Calculator {
 
             finalResult = numbers.pop();
 
-            if(!numbers.isEmpty()) throw new ErrorHandler(ErrorType.InValidExperssion_error);
+            if(!numbers.isEmpty()) throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
 
         } catch (EmptyStackException e) {
-            throw new ErrorHandler(ErrorType.InValidExperssion_error);
+            throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
         }
 
         // 최종 결과 반환
         DecimalFormat df = new DecimalFormat("#.######");
-        check_Range_Result(finalResult);
+        // check_Range_Result(finalResult);
 
                 if(finalResult == (int) finalResult){
                     finalResult = (int)finalResult;
@@ -208,19 +205,12 @@ public class Calculator {
         return finalResult;
     }
 
-    private int precedence(char operator) {
-        if (operator == '+' || operator == '-') {
-            return 1;
-        } else if (operator == '*' || operator == '/') {
-            return 2;
-        }else if (operator == '^') {
-            return 3;
-        }
-        return 0; // 다른 문자의 경우
+    private int precedence(char operator) throws ErrorHandler{
+        return Operator.getType(operator).getPriority();
     }
 
-    private Object[] preProcessing(String rawexpression) throws ErrorHandler{   // 반환은, ^를 위한 괄호 처리가 완료된 문자열과, 식이 대입식인지 아닌지 저장하는 boolean이다.
-        if(rawexpression.length() > 200) throw new ErrorHandler(ErrorType.Length_error);
+    private Object[] preProcessing(String rawexpression) throws ErrorHandler {   // 반환은, ^를 위한 괄호 처리가 완료된 문자열과, 식이 대입식인지 아닌지 저장하는 boolean이다.
+        if(rawexpression.length() > 200) throw new ErrorHandler(ErrorType.LENGTH_ERROR);
 
         rawexpression = rawexpression.trim();
 
@@ -235,15 +225,12 @@ public class Calculator {
             expression = rawexpression;
         }
 
-        if(!checkBracket(expression)) throw new ErrorHandler(ErrorType.Bracket_error);
-
-        //if(!check_Operand_Operator_Char(expression)) throw new ErrorHandler(ErrorType.InValidExperssion_error);
+        validationManager.checkBracketPair(expression);
 
         expression = optimizeForPower(expression);
 
         return new Object[] {isSubstitution, expression, variableName};
     }
-
 
     private String optimizeForPower(String expression)
     {
@@ -336,33 +323,6 @@ public class Calculator {
         return new Pair(variableName, expression.substring(i+3));
     }
 
-    private boolean checkBracket(String expression)
-    {
-        Stack<Character> STACK = new Stack<>();
-
-        for(int i=0; i< expression.length(); i++)
-        {
-            if(expression.charAt(i) == '(')
-            {
-                STACK.push( '(');
-            }else if(expression.charAt(i) == ')')
-            {
-                if(STACK.empty()) return false;
-
-                STACK.pop();
-            }
-        }
-
-        if(STACK.empty())
-        {
-            return true;
-        }else
-        {
-            return false;
-        }
- 
-    }
-
     private boolean checkStrArrangemnet(String expression) // 피연산자와 연산자가 제대로 떨어져 있는지 확인하는 함수입니다
     {
         StringBuilder sb = new StringBuilder(expression);
@@ -399,60 +359,4 @@ public class Calculator {
         return isTopOperator != 1;
           
     }
-
-
-    private boolean check_Operand_Operator_Char(String expression)
-    {
-        for(int i=0; i< expression.length(); i++)
-        {
-            if(expression.charAt(i) == '+' || expression.charAt(i) == '-'
-                    ||expression.charAt(i) == '*' ||expression.charAt(i) == '/'
-                    ||expression.charAt(i) == '^' ||expression.charAt(i) == '(' ||expression.charAt(i) == ')' )
-            {
-                continue;
-            }else if(expression.charAt(i) >= '0' && expression.charAt(i) <= '9')
-            {
-                continue;
-            }else if(expression.charAt(i) == '_' || expression.charAt(i) == ' ')
-            {
-                continue;
-            }else if(expression.charAt(i) == '$' && (i+1) < expression.length() && expression.charAt(i+1) == 'x')
-            {
-                continue;
-            }else if(expression.charAt(i) == 'x' && i>0 && expression.charAt(i-1) == '$')
-            {
-                continue;
-            }else if(expression.charAt(i) == '.' && i>0 && (i+1) < expression.length() &&
-                    expression.charAt(i-1) >= '0' && expression.charAt(i-1) <= '9' && expression.charAt(i+1) >= '0' && expression.charAt(i+1) <= '9')
-
-            {
-                continue;
-            }else
-            {
-                return false;
-            }
-
-        }
-
-        return true;
-    }
-
-    private double check_Range_In_Perform(double num) throws ErrorHandler{
-        if (num >= -Double.MAX_VALUE && num <= Double.MAX_VALUE) {
-            return num;
-        }else{
-            throw new ErrorHandler(ErrorType.TempValueOutofBound_error);
-
-        }
-    }
-
-    private double check_Range_Result(double result) throws ErrorHandler{
-        if (result >= -Double.MAX_VALUE && result <= Double.MAX_VALUE) {
-            return result;
-        }else{
-            throw new ErrorHandler(ErrorType.ResultValueOutofBound_error);
-        }
-    }
-
-
 }
