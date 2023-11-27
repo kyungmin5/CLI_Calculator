@@ -1,8 +1,14 @@
 
 import java.util.HashMap;
+import java.util.Set;
 
 public class UserVariable {
     private HashMap<String, Double> variableMap = new HashMap<String,Double>();
+
+    public Set<String> getVarableSets()
+    {
+        return variableMap.keySet();
+    }
 
     public Double getVariable(String variableName) throws ErrorHandler
     {

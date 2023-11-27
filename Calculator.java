@@ -3,8 +3,7 @@ import java.util.EmptyStackException;
 import java.util.Stack;
 // import java.util.Scanner;
 
-public class Calculator {
-    class Pair {
+class Pair {
         private String x;
         private String y;
     
@@ -21,7 +20,8 @@ public class Calculator {
             return y;
         }
     }
-    
+
+public class Calculator {
     private double previousValue = Double.NaN;
     private UserVariable variable = new UserVariable();
     private ValidationManager validationManager = new ValidationManager();
