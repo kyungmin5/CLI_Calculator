@@ -52,14 +52,23 @@ public class CalculatorApp {
 
             try {
                 double result = calculator.calculate(expression);
-                if (result == (int) result) {
-                    System.out.println((int) result);
-                } else {
-                    NumberFormat numberFormat = NumberFormat.getInstance();
-                    numberFormat.setMaximumFractionDigits(6);
-                    numberFormat.setGroupingUsed(false);
-                    System.out.println(numberFormat.format(result));
+
+                if(Double.isNaN(result))
+                {
+                    System.out.println("SUCCESS");
+                }else
+                {
+                    if (result == (int) result) {
+                        System.out.println((int) result);
+                    } else {
+                        NumberFormat numberFormat = NumberFormat.getInstance();
+                        numberFormat.setMaximumFractionDigits(6);
+                        numberFormat.setGroupingUsed(false);
+                        System.out.println(numberFormat.format(result));
+                    }
                 }
+
+               
             } catch (ErrorHandler e) {
                 e.PrintError();
             }   

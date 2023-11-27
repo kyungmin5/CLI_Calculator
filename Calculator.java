@@ -142,9 +142,48 @@ public class Calculator {
                     numbers.push(variable.getVariable(variableName) * isOperandShouldMinus);
                     isOperandShouldMinus = 1;
                     i = index + i;
+                }else if(currentChar == '@')
+                {
+                    int index = 1;
+                    String functionName = "";
+                    for(; index + i< expression.length() && expression.charAt(index + i) != '['; index++)
+                    {
+                        functionName += expression.charAt(index + i);
+                    }
+
+                    index = index + 1;
+                    String paraString = "";
+                    for( ; index + i<expression.length(); index++)
+                    {
+                        if(expression.charAt(index + i) == ']')
+                        {
+                            break;
+                        }
+                        paraString += expression.charAt(index + i);
+                    }
+
+                    ArrayList<Double> para = new ArrayList<Double>();
+                    String[] paras = paraString.split(",");
+                    if(paras[0].length() != 0)
+                    {
+                        for (String string : paras) {
+                            string = string.trim();
+                            para.add(Double.valueOf(string));
+                        }
+                    }
+                    
+                    
+                    String functionExpression = function.getFunction(functionName, para);
+                    System.out.println("[functionExpression]" + "\n" + functionExpression );
+                    Double result = RecursiveCaluculate(functionExpression);
+                    System.out.println("[result]" + "\n" + result );
+
+                    numbers.push( result * isOperandShouldMinus);
+                    isOperandShouldMinus = 1;
+                    i = index + i + 1;
                 }else if (operator.isOperator(currentChar)) {
                     // 연산자 우선순위를 고려하여 스택에 push
-                    if (currentChar == '-' && i + 1 < expression.length() && (Character.isDigit(expression.charAt(i + 1)) || expression.charAt(i + 1) == '(' || expression.charAt(i + 1) == '_' || expression.charAt(i + 1) == '$')) {
+                    if (currentChar == '-' && i + 1 < expression.length() && (Character.isDigit(expression.charAt(i + 1)) || expression.charAt(i + 1) == '(' || expression.charAt(i + 1) == '_' || expression.charAt(i + 1) == '$')  || expression.charAt(i + 1) == '@') {
                         // 이게 딱 음수 부호 피연산자의 형태. 이게 아니면 모두 연산자 처리한다
                         // 다만 이것이 음수 부호 형태가 맞지만, 연산자가 아니라는 것은 아니므로 추가 처리가 필요하다
                         boolean isOperator = false;
@@ -261,6 +300,8 @@ public class Calculator {
 
         }
 
+        System.out.println("[isSubstitution]\n" + isSubstitution);
+
         validationManager.checkBracketPair(expression);
 
         expression = optimizeForPower(expression);
@@ -334,11 +375,9 @@ public class Calculator {
         return sb.toString();
     }
 
-    private Tuple checksubstitution(String expression)
+    private Tuple checksubstitution(String expression) throws ErrorHandler
     {
-        Tuple failurePair = new Tuple("", "");
-
-        if(expression.length() < 1) return failurePair;
+        if(expression.length() < 1 || !expression.contains("=") ) return new Tuple("", "");
 
         if(expression.charAt(0) == '$')
         {
@@ -353,7 +392,7 @@ public class Calculator {
                 variableName += expression.charAt(i);
             }
 
-            if((i+4 > expression.length()) || (expression.charAt(i+1) != '=')  || (expression.charAt(i+2) != ' ')) return failurePair;
+            if((i+4 > expression.length()) || (expression.charAt(i+1) != '=')  || (expression.charAt(i+2) != ' ')) throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
             return new Tuple(variableName, expression.substring(i+3));
 
         }else if(expression.charAt(0) == '@')
@@ -372,7 +411,7 @@ public class Calculator {
 
             if(i + 1 == expression.length())
             {
-                return failurePair;
+                throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
             }
 
             i++;
@@ -388,26 +427,29 @@ public class Calculator {
 
             if(i + 1 == expression.length())
             {
-                return failurePair;
+                throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
             }
-            if((i+5 > expression.length()) || (expression.charAt(i+1) != ' ') || (expression.charAt(i+2) != '=')  || (expression.charAt(i+3) != ' ')) return failurePair;
+
+            if((i+4 > expression.length()) || (expression.charAt(i+1) != ' ') || (expression.charAt(i+2) != '=')  || (expression.charAt(i+3) != ' ')) throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
 
             // 여기까지 매개변수가 담겨있는 문자열 뺴내기
-
             String[] paras = paraString.split(",");
-            for (String string : paras) {
-                string.trim();
-                if(string.length() < 2 || string.charAt(0) != '%')
-                {
-                    return failurePair;
+            if(paras[0].length() != 0)
+            {
+                for (String string : paras) {
+                    string = string.trim();
+                    if(string.length() < 2 || string.charAt(0) != '%')
+                    {
+                        throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
+                    }
+                    para.add(string.substring(1));
                 }
-                para.add(string.substring(1));
             }
-
+        
             return new Tuple(functionName, expression.substring(i+4), para);
 
         }else{
-            return failurePair;
+            throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
         }
 
         
