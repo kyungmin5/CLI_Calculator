@@ -440,6 +440,21 @@ public class Calculator {
 
             // 여기까지 매개변수가 담겨있는 문자열 뺴내기
             String[] paras = paraString.split(",");
+            int count = 0;
+            for(int j=0; j<paraString.length(); j++)
+            {
+                if(paraString.charAt(j) == ',')
+                {
+                    count++;
+                }
+            }
+
+            if(paras.length != count + 1) 
+            {
+                System.err.println("para lenth 0");
+                throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
+            }
+
             if(paras[0].length() != 0)
             {
                 for (String string : paras) {
