@@ -340,7 +340,9 @@ public class Calculator {
                     end++;  // 닫는 괄호 다음 위치로 이동
                 } else {
                     while (end < sb.length() && (Character.isDigit(sb.charAt(end)) || sb.charAt(end) == '.' || sb.charAt(end) == ' ' 
-                    || Character.isAlphabetic(sb.charAt(end)) || sb.charAt(end) == '$' || sb.charAt(end) == '_' || sb.charAt(end) == '%') )  {
+                    || Character.isAlphabetic(sb.charAt(end)) || sb.charAt(end) == '$' || sb.charAt(end) == '_' || sb.charAt(end) == '%'
+                    || sb.charAt(end) == '@' || sb.charAt(end) == '[' || sb.charAt(end) == ']' || sb.charAt(end) == ','
+                    ) )  {
                         end++;
                     }
                 }
@@ -362,7 +364,9 @@ public class Calculator {
                     }
                 } else {
                     while (start >= 0 && (Character.isDigit(sb.charAt(start)) || sb.charAt(start) == '.' || sb.charAt(start) == ' '  
-                     || Character.isAlphabetic(sb.charAt(start)) || sb.charAt(start) == '$' || sb.charAt(start) == '_' || sb.charAt(start) == '%')) {
+                     || Character.isAlphabetic(sb.charAt(start)) || sb.charAt(start) == '$' || sb.charAt(start) == '_' || sb.charAt(start) == '%'
+                     || sb.charAt(start) == '@' || sb.charAt(start) == '[' || sb.charAt(start) == ']' || sb.charAt(start) == ','
+                     )) {
                         start--;
                     }
                 }
