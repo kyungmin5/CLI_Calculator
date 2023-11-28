@@ -155,20 +155,52 @@ public class Calculator {
                     String paraString = "";
                     for( ; index + i<expression.length(); index++)
                     {
+                        paraString += expression.charAt(index + i);
                         if(expression.charAt(index + i) == ']')
                         {
                             break;
                         }
-                        paraString += expression.charAt(index + i);
                     }
 
                     ArrayList<Double> para = new ArrayList<Double>();
-                    String[] paras = paraString.split(",");
-                    if(paras[0].length() != 0)
+                    ArrayList<String> paras = new ArrayList<String>();
+                    
+                    String tempstring = "";
+                    int bracketCount = 0;
+                    for(int j=0; j<paraString.length(); j++)
+                    {
+                        if(paraString.charAt(j) == ',')
+                        {
+                            if(bracketCount > 0) 
+                            {
+                                tempstring += paraString.charAt(j);
+                                continue;
+                            }
+                            if(tempstring == "") break;
+                            paras.add(tempstring);
+                            tempstring = "";
+                            continue;
+
+                        }else if(paraString.charAt(j) == '[')
+                        {
+                            bracketCount++;
+                        }else if(paraString.charAt(j) == ']')
+                        {
+                            bracketCount--;
+                        }
+
+                        tempstring += paraString.charAt(j);
+                    }
+
+                    if(tempstring != "") paras.add(tempstring);
+
+
+                    if(paras.size() != 0)
                     {
                         for (String string : paras) {
                             string = string.trim();
-                            para.add(Double.valueOf(string));
+                            double value = RecursiveCaluculate(string);
+                            para.add(value);
                         }
                     }
                     
