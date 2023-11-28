@@ -88,7 +88,6 @@ public class Calculator {
 
         double finalResult = 0;
         int isOperandShouldMinus = 1;
-        boolean isDollarX = false;
 
         Operator operator = new Operator();
 
