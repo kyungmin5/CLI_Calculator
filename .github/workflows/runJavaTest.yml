@@ -29,14 +29,12 @@ jobs:
 
     - name: Check Java Version
       run: java --version
-
-    - name: Check Current Repository
-      run: ls -la
       
-    - name: Compile Java Code
-      run: javac -cp "./lib/junit-platform-console-standalone-1.10.0.jar" -d . -sourcepath . $(find -name "*.java")
-
-    - name: Run JUnit Tests
-      run: java -jar lib/junit-platform-console-standalone-1.10.0.jar --class-path . --scan-classpath
-
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    
+    - name: Test with Gradle
+      run: ./gradlew --info test
+    # - name: Run JUnit Tests
+    #   run: java -jar lib/junit-platform-console-standalone-1.10.0.jar --class-path . --scan-classpath
 

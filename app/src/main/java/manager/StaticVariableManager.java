@@ -1,4 +1,6 @@
-public class StaticVariable {
+package manager;
+
+public class StaticVariableManager {
   
   public static double resultBuffer = Double.NaN;
 

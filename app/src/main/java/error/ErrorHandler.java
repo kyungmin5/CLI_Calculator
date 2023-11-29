@@ -1,3 +1,5 @@
+package error;
+
 public class ErrorHandler extends Exception {
 
     ErrorType errorType;
@@ -31,6 +33,8 @@ public class ErrorHandler extends Exception {
             break;
         case VALUE_OUT_OF_BOUND_ERROR:
             System.out.println("값 범위 초과 오류입니다\n");
+            break;
+        default:
             break;
         }
     }

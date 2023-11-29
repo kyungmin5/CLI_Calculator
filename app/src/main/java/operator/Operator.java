@@ -1,13 +1,17 @@
+package operator;
+
+import error.*;
+
 public class Operator {
   public OperatorType type;
   public double lhs;
   public double rhs;
 
-  Operator() {
+  public Operator() {
 
   }
 
-  Operator(OperatorType type, double lhs, double rhs) {
+  public Operator(OperatorType type, double lhs, double rhs) {
     this.type = type;
     this.lhs = lhs;
     this.rhs = rhs;

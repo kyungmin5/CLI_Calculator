@@ -1,6 +1,9 @@
+package user;
 
 import java.util.HashMap;
 import java.util.Set;
+
+import error.*;
 
 public class UserVariable {
     private HashMap<String, Double> variableMap = new HashMap<String,Double>();
