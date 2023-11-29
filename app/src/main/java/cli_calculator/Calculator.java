@@ -116,19 +116,54 @@ public class Calculator {
 
                     index = index + 1;
                     String paraString = "";
-                    for (; index + i < expression.length(); index++) {
-                        if (expression.charAt(index + i) == ']') {
+                    for( ; index + i<expression.length(); index++)
+                    {
+                        paraString += expression.charAt(index + i);
+                        if(expression.charAt(index + i) == ']')
+                        {
                             break;
                         }
-                        paraString += expression.charAt(index + i);
                     }
 
                     ArrayList<Double> para = new ArrayList<Double>();
-                    String[] paras = paraString.split(",");
-                    if (paras[0].length() != 0) {
+                    ArrayList<String> paras = new ArrayList<String>();
+                    
+                    String tempstring = "";
+                    int bracketCount = 0;
+                    for(int j=0; j<paraString.length(); j++)
+                    {
+                        if(paraString.charAt(j) == ',')
+                        {
+                            if(bracketCount > 0) 
+                            {
+                                tempstring += paraString.charAt(j);
+                                continue;
+                            }
+                            if(tempstring == "") break;
+                            paras.add(tempstring);
+                            tempstring = "";
+                            continue;
+
+                        }else if(paraString.charAt(j) == '[')
+                        {
+                            bracketCount++;
+                        }else if(paraString.charAt(j) == ']')
+                        {
+                            bracketCount--;
+                        }
+
+                        tempstring += paraString.charAt(j);
+                    }
+
+                    if(tempstring != "") paras.add(tempstring);
+
+
+                    if(paras.size() != 0)
+                    {
                         for (String string : paras) {
                             string = string.trim();
-                            para.add(Double.valueOf(string));
+                            double value = RecursiveCaluculate(string);
+                            para.add(value);
                         }
                     }
 
@@ -304,9 +339,10 @@ public class Calculator {
                     }
                     end++; // 닫는 괄호 다음 위치로 이동
                 } else {
-                    while (end < sb.length() && (Character.isDigit(sb.charAt(end)) || sb.charAt(end) == '.'
-                            || sb.charAt(end) == ' ' || Character.isAlphabetic(sb.charAt(end)) || sb.charAt(end) == '$'
-                            || sb.charAt(end) == '_')) {
+                    while (end < sb.length() && (Character.isDigit(sb.charAt(end)) || sb.charAt(end) == '.' || sb.charAt(end) == ' ' 
+                    || Character.isAlphabetic(sb.charAt(end)) || sb.charAt(end) == '$' || sb.charAt(end) == '_' || sb.charAt(end) == '%'
+                    || sb.charAt(end) == '@' || sb.charAt(end) == '[' || sb.charAt(end) == ']' || sb.charAt(end) == ','
+                    ) )  {
                         end++;
                     }
                 }
@@ -329,9 +365,10 @@ public class Calculator {
                             closeParensCount++;
                     }
                 } else {
-                    while (start >= 0 && (Character.isDigit(sb.charAt(start)) || sb.charAt(start) == '.'
-                            || sb.charAt(start) == ' ' || Character.isAlphabetic(sb.charAt(start))
-                            || sb.charAt(start) == '$' || sb.charAt(start) == '_')) {
+                    while (start >= 0 && (Character.isDigit(sb.charAt(start)) || sb.charAt(start) == '.' || sb.charAt(start) == ' '  
+                     || Character.isAlphabetic(sb.charAt(start)) || sb.charAt(start) == '$' || sb.charAt(start) == '_' || sb.charAt(start) == '%'
+                     || sb.charAt(start) == '@' || sb.charAt(start) == '[' || sb.charAt(start) == ']' || sb.charAt(start) == ','
+                     )) {
                         start--;
                     }
                 }
@@ -401,7 +438,23 @@ public class Calculator {
 
             // 여기까지 매개변수가 담겨있는 문자열 뺴내기
             String[] paras = paraString.split(",");
-            if (paras[0].length() != 0) {
+            int count = 0;
+            for(int j=0; j<paraString.length(); j++)
+            {
+                if(paraString.charAt(j) == ',')
+                {
+                    count++;
+                }
+            }
+
+            if(paras.length != count + 1) 
+            {
+                System.err.println("para lenth 0");
+                throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
+            }
+
+            if(paras[0].length() != 0)
+            {
                 for (String string : paras) {
                     string = string.trim();
                     if (string.length() < 2 || string.charAt(0) != '%') {
