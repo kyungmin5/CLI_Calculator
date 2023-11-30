@@ -1,7 +1,10 @@
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+package operator;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+import cli_calculator.*;
+import error.*;
 
 public class OperatorTest {
   private Calculator calculator = new Calculator();
