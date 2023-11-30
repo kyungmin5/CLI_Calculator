@@ -386,22 +386,14 @@ public class Calculator {
     private Tuple checkSubstitution(String expression) throws ErrorHandler {
         // '=' 문자로 함수 혹은 변수 대입식인지 판별
         if (expression.length() < 1 || !expression.contains("="))
-            return new Tuple("", "");
+            return new Tuple("", ""); // 일반 수식
 
         // '$'로 시작하면 변수 대입문
         if (expression.charAt(0) == '$') {
-            String variableName = "";
-            int i = 1;
-            for (; i < expression.length(); i++) {
-                if (expression.charAt(i) == ' ') {
-                    break;
-                }
-                variableName += expression.charAt(i);
-            }
-
-            if ((i + 4 > expression.length()) || (expression.charAt(i + 1) != '=') || (expression.charAt(i + 2) != ' '))
-                throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
-            return new Tuple(variableName, expression.substring(i + 3));
+            validationManager.checkVariableDefineExpression(expression);
+            String[] splitExpression = expression.split(" =");
+            String variableName = splitExpression[0].substring(1);
+            return new Tuple(variableName, splitExpression[1].trim());
 
         } else if (expression.charAt(0) == '@') { // '@'로 시작하면 함수 대입문
             validationManager.checkFunctionDefineExpression(expression);
@@ -470,43 +462,5 @@ public class Calculator {
             throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
         }
 
-    }
-
-    private boolean checkStrArrangemnet(String expression) // 피연산자와 연산자가 제대로 떨어져 있는지 확인하는 함수입니다
-    {
-        StringBuilder sb = new StringBuilder(expression);
-
-        for (int i = 0; i < expression.length(); i++) {
-            if (sb.charAt(i) == '(' || sb.charAt(i) == ')'
-                    || ((sb.charAt(i) == '-' || sb.charAt(i) == '+' || sb.charAt(i) == '*' || sb.charAt(i) == '/'
-                            || sb.charAt(i) == '^') && i + 1 < expression.length() && sb.charAt(i + 1) != ' ')) {
-                sb.setCharAt(i, ' ');
-            }
-        }
-        sb = new StringBuilder(sb.toString().trim());
-
-        int isTopOperator = 0; // 0 -> empty, 1-> operator, 2->operand
-        String[] words = sb.toString().split("\\s+");
-
-        // System.out.println();
-        for (String string : words) {
-            string = string.trim();
-            // System.out.println(string);
-
-            if (string.equals("+") || string.equals("-") || string.equals("*") || string.equals("/")
-                    || string.equals("^")) // 연산자인 경우
-            {
-                if (isTopOperator == 0 || isTopOperator == 1)
-                    return false; // 연산자가 들어왔는데 또 연산자가 번달아 왔으므로 오류
-                isTopOperator = 1;
-            } else // 피연산자 이 경우
-            {
-                if (isTopOperator == 2)
-                    return false; // 피연산자가 들어왔는데 또 피연산자가 번달아 왔으므로 오류
-
-                isTopOperator = 2;
-            }
-        }
-        return isTopOperator != 1;
     }
 }

@@ -12,6 +12,7 @@ public enum ErrorType {
   INVALID_EXPRESSION_ERROR, // 올바르지 않은 수식
   // Result Error
   VALUE_OUT_OF_BOUND_ERROR,  // 유효한 결과 범위 초과
-  // Function
+  // Define
   FUNCTION_DEFINE_ERROR, // 함수 정의부(@ 문자부터 = 문자까지)의 형식 오류
+  VARIABLE_DEFINE_ERROR, // 함수 정의부($ 문자부터 = 문자까지)의 형식 오류
 }

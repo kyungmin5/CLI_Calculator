@@ -34,6 +34,12 @@ public class ErrorHandler extends Exception {
         case VALUE_OUT_OF_BOUND_ERROR:
             System.out.println("값 범위 초과 오류입니다\n");
             break;
+        case VARIABLE_DEFINE_ERROR:
+            System.out.println("변수 정의부 문법 오류입니다. $변수명 = 수식\n");
+            break;
+        case FUNCTION_DEFINE_ERROR:
+            System.out.println("함수 정의부 문법 오류입니다. @함수면[%매개변수1, ...] = 수식 \n");
+            break;
         default:
             break;
         }

@@ -11,8 +11,17 @@ public class ValidationManager {
 
     }
 
+    public void checkVariableDefineExpression(String expression) throws ErrorHandler {
+        String regex = "\\$[a-z0-9]+\\s=\\s+.+";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(expression);
+        if (!matcher.matches()) {
+            throw new ErrorHandler(ErrorType.VARIABLE_DEFINE_ERROR);
+        }
+    }
+
     public void checkFunctionDefineExpression(String expression) throws ErrorHandler {
-        String regex = "@[a-z0-9]+\\[%[a-z0-9]+(?:,\\s*%[a-z0-9]+)*\\] =\\s*.*";
+        String regex = "@[a-z0-9]+\\[(%[a-z0-9]+(?:,\\s*%[a-z0-9]+)*)?\\]+\\s=\\s+.+";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(expression);
         if (!matcher.matches()) {
