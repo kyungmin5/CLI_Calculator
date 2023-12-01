@@ -33,9 +33,9 @@ public class Calculator {
 
         switch (expressionType) {
             case MATHEMATICAL: // 대입식이 아닌 경우
-                return RecursiveCaluculate(expression);
+                return recursiveCaluculate(expression);
             case VARIABLE: // 변수 대입식인 경우
-                double result = RecursiveCaluculate(expression);
+                double result = recursiveCaluculate(expression);
                 variable.setVariable(variableName, result);
                 return result;
             case FUNCTION: // 함수 대입식인 경우
@@ -47,7 +47,7 @@ public class Calculator {
         }
     }
 
-    private double RecursiveCaluculate(String expression) throws ErrorHandler {
+    private double recursiveCaluculate(String expression) throws ErrorHandler {
         Stack<Double> numbers = new Stack<>();
         Stack<Character> operators = new Stack<>();
         int stackCount = 0;
@@ -90,7 +90,7 @@ public class Calculator {
                             stackCount--;
                         }
                     }
-                    numbers.push(RecursiveCaluculate(expression.substring(i + 1, j - 1)) * isOperandShouldMinus);
+                    numbers.push(recursiveCaluculate(expression.substring(i + 1, j - 1)) * isOperandShouldMinus);
                     isOperandShouldMinus = 1;
                     i = j - 1; // 여기가 실제 ) 가 있는 인덱스. i를 ) 의 index로 보내버린다.
                 } else if (currentChar == '$') {
@@ -114,36 +114,28 @@ public class Calculator {
                     // int index = i + subExpression.indexOf("]")+1;
                     
                     // @r[%d] = %d + 1
+                    //  @t[%q,%w] = %q + %w
                     // @d[%a,%s,%d,     %f] = %a + %a + %s + %f
-                    // @d[@r[2],(5-1),@r[1234],@d[1,3,    5   , 7]]
+                    // @d[@t[@r[2],@r[2]],(5-1),@r[1234],@d[1,3,    5   , 7]]  - 10 + @t[   2,4]
 
                     // 파라미터 파싱
-                    int endIndex = subExpression.indexOf("[");
-                    int bracketFlag = 1;
-                    // for  {
-                    //     System.out.println(bracketFlag);
-                    // }
-                    String paraString = subExpression.substring(subExpression.indexOf("["), endIndex);
+                    int endIndex = closeBracketIndex(subExpression);
+                    String argumentsString = subExpression.substring(subExpression.indexOf("["), endIndex);
                     ArrayList<Double> argumentList = new ArrayList<Double>();
-                    if (paraString.length() > 2) {
-                        paraString = paraString.substring(1, paraString.length() - 1).trim();
-                        for (String argument : paraString.split(",")) {
-                            if (!argument.trim().isEmpty()) {
-                                double argumentValue = RecursiveCaluculate(argument.trim());
-                                argumentList.add(argumentValue);
-                            }
-                        }
+                    if (argumentsString.length() > 2) {
+                        argumentsString = argumentsString.substring(1, argumentsString.length() - 1).trim();
+                        argumentList = calculateArguments(argumentsString);
                     }
 
                     // 함수 값 
                     String functionExpression = function.getFunction(functionName, argumentList);
                     // System.out.println("[functionExpression]: " + functionExpression);
-                    Double result = RecursiveCaluculate(functionExpression);
+                    Double result = recursiveCaluculate(functionExpression);
                     // System.out.println("[result]: " + result);
 
                     numbers.push(result * isOperandShouldMinus);
                     isOperandShouldMinus = 1;
-                    i = i + subExpression.indexOf("]")+1;
+                    i = i + endIndex;
                 } else if (operator.isOperator(currentChar)) {
                     // 연산자 우선순위를 고려하여 스택에 push
                     if (currentChar == '-' && i + 1 < expression.length()
@@ -240,6 +232,49 @@ public class Calculator {
     // 연산자 우선순위 반환
     private int precedence(char operator) throws ErrorHandler {
         return Operator.getType(operator).getPriority();
+    }
+
+    // 함수 닫힘 대괄호 Index 계산
+    private int closeBracketIndex(String subExpression) {
+        int endIndex = subExpression.indexOf("[");
+        int bracketFlag = 1;
+        while (bracketFlag > 0) {
+            endIndex += 1;
+            if (subExpression.charAt(endIndex) == '[')
+                bracketFlag++;
+            else if (subExpression.charAt(endIndex) == ']')
+                bracketFlag--;
+        }
+        return endIndex + 1;
+    }
+
+    private ArrayList<Double> calculateArguments(String argumentsString) throws ErrorHandler {
+        ArrayList<Double> argumentList = new ArrayList<Double>();
+        int index = 0;
+        int bracketFlag = 0;
+        for (int i = index; i < argumentsString.length(); i++) {
+            // System.out.println(i);
+            if (argumentsString.charAt(i) == '[') {
+                bracketFlag++;
+            }
+            if (argumentsString.charAt(i) == ']') {
+                bracketFlag--;
+            }
+            if ((argumentsString.charAt(i) == ',')) {
+                if (bracketFlag == 0) {
+                    String argumentString = argumentsString.substring(index, i);
+                    double argumentValue = recursiveCaluculate(argumentString);
+                    argumentList.add(argumentValue);
+                    index = i + 1;
+                }
+            }
+            if (i == argumentsString.length() - 1) {
+                String argumentString = argumentsString.substring(index);
+                double argumentValue = recursiveCaluculate(argumentString);
+                argumentList.add(argumentValue);
+            }
+        }
+        return argumentList;
     }
 
     // Object[수식의 타입, 표현식, 변수 혹은 함수 이름, 매개변수]
@@ -353,7 +388,7 @@ public class Calculator {
     private Tuple checkSubstitution(String expression) throws ErrorHandler {
         if (expression.length() < 1 || !expression.contains("="))
             return new Tuple("", expression); // 일반 수식
-        
+        expression = expression.trim();
         if (expression.charAt(0) == '$') { // '$'로 시작하면 변수 대입문
             validationManager.checkVariableDefineExpression(expression);
             String[] splitExpression = expression.split(" =");
@@ -375,4 +410,6 @@ public class Calculator {
         }
         throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
     }
+
+
 }
