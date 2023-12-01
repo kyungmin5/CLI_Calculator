@@ -4,9 +4,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import error.ErrorHandler;
-import manager.ValidationManager;
 
 public class CalculatorTest {
+
   @Test
   public void recursiveSingleFunctionCaluculateTest() throws ErrorHandler {
     Calculator calculator = new Calculator();                
