@@ -113,8 +113,17 @@ public class Calculator {
                     }
                     // int index = i + subExpression.indexOf("]")+1;
                     
+                    // @r[%d] = %d + 1
+                    // @d[%a,%s,%d,     %f] = %a + %a + %s + %f
+                    // @d[@r[2],(5-1),@r[1234],@d[1,3,    5   , 7]]
+
                     // 파라미터 파싱
-                    String paraString = subExpression.substring(subExpression.indexOf("["), subExpression.indexOf("]")+1);
+                    int endIndex = subExpression.indexOf("[");
+                    int bracketFlag = 1;
+                    // for  {
+                    //     System.out.println(bracketFlag);
+                    // }
+                    String paraString = subExpression.substring(subExpression.indexOf("["), endIndex);
                     ArrayList<Double> argumentList = new ArrayList<Double>();
                     if (paraString.length() > 2) {
                         paraString = paraString.substring(1, paraString.length() - 1).trim();

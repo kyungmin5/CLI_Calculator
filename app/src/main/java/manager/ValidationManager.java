@@ -31,19 +31,28 @@ public class ValidationManager {
 
     // 괄호쌍 체크
     public boolean checkBracketPair(String expression) throws ErrorHandler {
-        Stack<Character> STACK = new Stack<>();
+        Stack<Character> smallBracket = new Stack<>();
+        Stack<Character> bigBracket = new Stack<>();
 
         for (int i = 0; i < expression.length(); i++) {
             if (expression.charAt(i) == '(') {
-                STACK.push('(');
+                smallBracket.push('(');
             } else if (expression.charAt(i) == ')') {
-                if (STACK.empty())
+                if (smallBracket.empty())
                     return false;
-                STACK.pop();
+                smallBracket.pop();
+            }
+
+            if (expression.charAt(i) == '[') {
+                bigBracket.push('[');
+            } else if (expression.charAt(i) == ']') {
+                if (bigBracket.empty())
+                    return false;
+                bigBracket.pop();
             }
         }
 
-        if (STACK.empty())
+        if (smallBracket.empty() && bigBracket.empty())
             return true;
 
         throw new ErrorHandler(ErrorType.BRACKET_ERROR);
