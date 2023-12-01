@@ -2,6 +2,7 @@ package cli_calculator;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EmptyStackException;
 import java.util.Stack;
 
@@ -24,32 +25,26 @@ public class Calculator {
 
     public double calculate(String expression) throws ErrorHandler {
         Object[] RESULT = preProcessing(expression);
-        // expression = expression.replaceAll(" ", ""); // 입력 문자열에서 공백 제거
 
-        int isSubstitution = (int) RESULT[0]; // 대입식인지 그냥 수식인지를 판별
+        // 입력된 문자열의 타입을 판별
+        ExpressionType expressionType = (ExpressionType) RESULT[0];
         expression = (String) RESULT[1]; // 수식이면 수식이 ^에 대해 () 처리만 하고 나오고, 대입이라면 = 오른쪽 부분만이 ^처리 후에 나오게 된다
         String variableName = (String) RESULT[2];
-        ArrayList<String> paras = (ArrayList<String>) RESULT[3];
 
-        // 결국, 수식이면 계산 한 값을 반환하면 되는 것이고, 대입이라면 계산 한 값을 x에 대입하면 되는 것이다
-
-        if (isSubstitution == 1) {
-            // 변수 대입식인 경우
-            double result = RecursiveCaluculate(expression);
-            variable.setVariable(variableName, result);
-            return result;
-        } else if (isSubstitution == 2) {
-            // 함수 대입식인 경우
-            function.setFunction(variable, previousValue, variableName, paras, expression);
-            return Double.NaN;
-        } else {
-            // 대입식이 아닌 경우
-            double result = RecursiveCaluculate(expression);
-            return result;
+        switch (expressionType) {
+            case MATHEMATICAL: // 대입식이 아닌 경우
+                return RecursiveCaluculate(expression);
+            case VARIABLE: // 변수 대입식인 경우
+                double result = RecursiveCaluculate(expression);
+                variable.setVariable(variableName, result);
+                return result;
+            case FUNCTION: // 함수 대입식인 경우
+                ArrayList<String> paras = (ArrayList<String>) RESULT[3];
+                function.setFunction(variable, previousValue, variableName, paras, expression);
+                return Double.NaN;
+            default:
+                throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_TYPE_ERROR);
         }
-
-        // 직전 값에 대입하는 식
-
     }
 
     private double RecursiveCaluculate(String expression) throws ErrorHandler {
@@ -108,73 +103,38 @@ public class Calculator {
                     isOperandShouldMinus = 1;
                     i = index + i;
                 } else if (currentChar == '@') {
-                    int index = 1;
-                    String functionName = "";
-                    for (; index + i < expression.length() && expression.charAt(index + i) != '['; index++) {
-                        functionName += expression.charAt(index + i);
+                    String subExpression = expression.substring(i+1);
+                    // 함수 이름 파싱
+                    String functionName = subExpression;
+                    if (functionName.contains("[") && functionName.contains("]")) {
+                        functionName = functionName.substring(0, functionName.indexOf("["));
+                    } else {
+                        throw new ErrorHandler(ErrorType.FUNCTION_BRACKET_ERROR);
                     }
-
-                    index = index + 1;
-                    String paraString = "";
-                    for( ; index + i<expression.length(); index++)
-                    {
-                        paraString += expression.charAt(index + i);
-                        if(expression.charAt(index + i) == ']')
-                        {
-                            break;
-                        }
-                    }
-
-                    ArrayList<Double> para = new ArrayList<Double>();
-                    ArrayList<String> paras = new ArrayList<String>();
+                    // int index = i + subExpression.indexOf("]")+1;
                     
-                    String tempstring = "";
-                    int bracketCount = 0;
-                    for(int j=0; j<paraString.length(); j++)
-                    {
-                        if(paraString.charAt(j) == ',')
-                        {
-                            if(bracketCount > 0) 
-                            {
-                                tempstring += paraString.charAt(j);
-                                continue;
+                    // 파라미터 파싱
+                    String paraString = subExpression.substring(subExpression.indexOf("["), subExpression.indexOf("]")+1);
+                    ArrayList<Double> argumentList = new ArrayList<Double>();
+                    if (paraString.length() > 2) {
+                        paraString = paraString.substring(1, paraString.length() - 1).trim();
+                        for (String argument : paraString.split(",")) {
+                            if (!argument.trim().isEmpty()) {
+                                double argumentValue = RecursiveCaluculate(argument.trim());
+                                argumentList.add(argumentValue);
                             }
-                            if(tempstring == "") break;
-                            paras.add(tempstring);
-                            tempstring = "";
-                            continue;
-
-                        }else if(paraString.charAt(j) == '[')
-                        {
-                            bracketCount++;
-                        }else if(paraString.charAt(j) == ']')
-                        {
-                            bracketCount--;
-                        }
-
-                        tempstring += paraString.charAt(j);
-                    }
-
-                    if(tempstring != "") paras.add(tempstring);
-
-
-                    if(paras.size() != 0)
-                    {
-                        for (String string : paras) {
-                            string = string.trim();
-                            double value = RecursiveCaluculate(string);
-                            para.add(value);
                         }
                     }
 
-                    String functionExpression = function.getFunction(functionName, para);
-                    System.out.println("[functionExpression]" + "\n" + functionExpression);
+                    // 함수 값 
+                    String functionExpression = function.getFunction(functionName, argumentList);
+                    // System.out.println("[functionExpression]: " + functionExpression);
                     Double result = RecursiveCaluculate(functionExpression);
-                    System.out.println("[result]" + "\n" + result);
+                    // System.out.println("[result]: " + result);
 
                     numbers.push(result * isOperandShouldMinus);
                     isOperandShouldMinus = 1;
-                    i = index + i + 1;
+                    i = i + subExpression.indexOf("]")+1;
                 } else if (operator.isOperator(currentChar)) {
                     // 연산자 우선순위를 고려하여 스택에 push
                     if (currentChar == '-' && i + 1 < expression.length()
@@ -222,7 +182,7 @@ public class Calculator {
                 } else if (currentChar == '_') {
                     // 직전값이 배정되지 않았을 경우
                     if (Double.isNaN(previousValue)) {
-                        throw new ErrorHandler(ErrorType.INVALID_OPERAND_ERROR);
+                        throw new ErrorHandler(ErrorType.INVALID_PREVIOUS_VALUE_ERROR);
                     }
                     // '_'를 만날 때 직전값을 스택에 push
                     numbers.push(previousValue * isOperandShouldMinus);
@@ -268,46 +228,43 @@ public class Calculator {
         return finalResult;
     }
 
+    // 연산자 우선순위 반환
     private int precedence(char operator) throws ErrorHandler {
         return Operator.getType(operator).getPriority();
     }
 
-    private Object[] preProcessing(String rawexpression) throws ErrorHandler { // 반환은, ^를 위한 괄호 처리가 완료된 문자열과, 식이 대입식인지
-                                                                               // 아닌지 저장하는 boolean이다.
-        if (rawexpression.length() > 200)
+    // Object[수식의 타입, 표현식, 변수 혹은 함수 이름, 매개변수]
+    private Object[] preProcessing(String rawExpression) throws ErrorHandler {         
+        rawExpression = rawExpression.trim();
+
+        if (rawExpression.length() > 200)
             throw new ErrorHandler(ErrorType.LENGTH_ERROR);
-
-        rawexpression = rawexpression.trim();
-
-        int isSubstitution = 0; // 0 : 대입식 아님, 1 : 변수 대입식임, 2 : 함수 대입식임
-        Tuple resultPair = checkSubstitution(rawexpression);
+            
+        // 입력된 문자열의 타입
+        ExpressionType expressionType = ExpressionType.MATHEMATICAL;
+        Tuple resultPair = checkSubstitution(rawExpression);
         String variableName = resultPair.first();
         String expression = resultPair.second();
         ArrayList<String> paras = resultPair.third();
 
-        if (variableName == "") // 대입 식이 아님
-        {
-            isSubstitution = 0;
-            expression = rawexpression;
-        } else if (paras == null) // 이 경우 변수 대입
-        {
-            isSubstitution = 1;
-
-        } else if (paras != null) // 이 경우 함수를 대입
-        {
-            isSubstitution = 2;
-
+        // 대입 식이 아니면서
+        if (variableName != "") { 
+            if (paras == null) { // 이 경우 변수 대입
+                expressionType = ExpressionType.VARIABLE;
+            } else if (paras != null) { // 이 경우 함수를 대입
+                expressionType = ExpressionType.FUNCTION;
+            }
         }
-
-        System.out.println("[isSubstitution]\n" + isSubstitution);
+        
+        // System.out.println("[ExpressionType]: " + expressionType);
 
         validationManager.checkBracketPair(expression);
-
         expression = optimizeForPower(expression);
 
-        return new Object[] { isSubstitution, expression, variableName, paras };
+        return new Object[] { expressionType, expression, variableName, paras };
     }
 
+    // 제곱 연산에 소괄호
     private String optimizeForPower(String expression) {
         StringBuilder sb = new StringBuilder(expression);
 
@@ -383,84 +340,30 @@ public class Calculator {
         return sb.toString();
     }
 
+    // =, $, @ 문자로 함수 혹은 변수 대입식인지 판별
     private Tuple checkSubstitution(String expression) throws ErrorHandler {
-        // '=' 문자로 함수 혹은 변수 대입식인지 판별
         if (expression.length() < 1 || !expression.contains("="))
-            return new Tuple("", ""); // 일반 수식
-
-        // '$'로 시작하면 변수 대입문
-        if (expression.charAt(0) == '$') {
+            return new Tuple("", expression); // 일반 수식
+        
+        if (expression.charAt(0) == '$') { // '$'로 시작하면 변수 대입문
             validationManager.checkVariableDefineExpression(expression);
             String[] splitExpression = expression.split(" =");
             String variableName = splitExpression[0].substring(1);
             return new Tuple(variableName, splitExpression[1].trim());
-
         } else if (expression.charAt(0) == '@') { // '@'로 시작하면 함수 대입문
             validationManager.checkFunctionDefineExpression(expression);
-            String functionName = "";
-            ArrayList<String> para = new ArrayList<String>();
-            int i = 1;
-            for (; i < expression.length(); i++) {
-                if (expression.charAt(i) == '[') {
-                    break;
-                }
-                functionName += expression.charAt(i);
-            }
-
-            if (i + 1 == expression.length()) {
-                throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
-            }
-
-            i++;
-            String paraString = "";
-            for (; i < expression.length(); i++) {
-                if (expression.charAt(i) == ']') {
-                    break;
-                }
-                paraString += expression.charAt(i);
-            }
-
-            if (i + 1 == expression.length()) {
-                throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
-            }
-
-            if ((i + 4 > expression.length()) || (expression.charAt(i + 1) != ' ') || (expression.charAt(i + 2) != '=')
-                    || (expression.charAt(i + 3) != ' '))
-                throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
-
-            // 여기까지 매개변수가 담겨있는 문자열 뺴내기
-            String[] paras = paraString.split(",");
-            int count = 0;
-            for(int j=0; j<paraString.length(); j++)
-            {
-                if(paraString.charAt(j) == ',')
-                {
-                    count++;
-                }
-            }
-
-            if(paras.length != count + 1) 
-            {
-                System.err.println("para lenth 0");
-                throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
-            }
-
-            if(paras[0].length() != 0)
-            {
-                for (String string : paras) {
-                    string = string.trim();
-                    if (string.length() < 2 || string.charAt(0) != '%') {
-                        throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
-                    }
-                    para.add(string.substring(1));
-                }
-            }
-
-            return new Tuple(functionName, expression.substring(i + 4), para);
-
-        } else {
-            throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
+            String[] splitExpression = expression.split("\\[");
+             // 함수 이름
+            String functionName = splitExpression[0].substring(1);
+            splitExpression = splitExpression[1].split("\\]");
+            // Parameter Array
+            ArrayList<String> parameterArray = new ArrayList<String>(Arrays.stream(splitExpression[0].split(",")).map(param -> param.trim()).toList());
+            // 저장될 수식
+            String savedExpression = splitExpression[1].split("=")[1].trim();
+            // System.out.println(functionName);
+            // System.out.println(savedExpression);
+            return new Tuple(functionName, savedExpression, parameterArray);
         }
-
+        throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
     }
 }

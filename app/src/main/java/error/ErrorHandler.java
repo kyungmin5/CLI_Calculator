@@ -31,14 +31,33 @@ public class ErrorHandler extends Exception {
         case INVALID_EXPRESSION_ERROR:
             System.out.println("RecursiveCaluculate_피연산자 공백 피연산자 (수식) 오류입니다\n");
             break;
+        case INVALID_EXPRESSION_TYPE_ERROR:
+            System.out.println("RecursiveCaluculate_분류할 수 없는 수식 타입입니다\n");
+            break;
+        case INVALID_PREVIOUS_VALUE_ERROR:
+            System.out.println("직전 결과 값이 비어있습니다.\n");
+            break;
         case VALUE_OUT_OF_BOUND_ERROR:
             System.out.println("값 범위 초과 오류입니다\n");
+            break;
+        // 함수, 변수 정의
+        case FUNCTION_DEFINE_ERROR:
+            System.out.println("함수 정의부 문법 오류입니다. @함수면[%매개변수1, ...] = 수식 \n");
+            break;
+        case FUNCTION_PARAMETER_DUPLICATE_DEFINE_ERROR:
+            System.out.println("중복된 이름의 매개변수가 사용되었습니다.\n");
+            break;
+        case FUNCTION_PARAMETER_SIZE_UNMATCH_ERROR:
+            System.out.println("입력된 매개변수의 개수가 올바르지 않습니다.\n");
+            break;
+        case FUNCTION_BRACKET_ERROR:
+            System.out.println("함수의 사용 형식이 올바르지 않습니다.\n");
             break;
         case VARIABLE_DEFINE_ERROR:
             System.out.println("변수 정의부 문법 오류입니다. $변수명 = 수식\n");
             break;
-        case FUNCTION_DEFINE_ERROR:
-            System.out.println("함수 정의부 문법 오류입니다. @함수면[%매개변수1, ...] = 수식 \n");
+        case VARIABLE_UNDEFINE_ERROR:
+            System.out.println("정의되지 않는 변수가 사용되었습니다.\n");
             break;
         default:
             break;

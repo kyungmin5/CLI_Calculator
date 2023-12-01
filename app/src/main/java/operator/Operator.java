@@ -34,7 +34,7 @@ public class Operator {
       case POWER:
           return Math.pow(lhs, rhs);
       default:
-          throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
+          throw new ErrorHandler(ErrorType.INVALID_OPERATOR_ERROR);
     }
   }
 
