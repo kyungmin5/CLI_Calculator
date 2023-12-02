@@ -223,7 +223,7 @@ public class Calculator {
                 throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
 
         } catch (ErrorHandler e) {
-            throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
+            throw e;
         }
 
         // 최종 결과 반환
