@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import manager.*;
 import error.*;
 
 public class UserFunction {
@@ -67,6 +68,8 @@ public class UserFunction {
        }
     }
 
+    // 함수에 다른 함수가 쓰였을 시, 해당 함수의 존재여부
+    // 함수에 정의되지 않은 매개변수가 쓰였을 시, 유효성 검사
     public void setFunction(
         UserVariable userVariables,
         Double previousValue,
@@ -78,7 +81,9 @@ public class UserFunction {
         if (set.size() != functionPara.size()) {
             throw new ErrorHandler(ErrorType.FUNCTION_PARAMETER_DUPLICATE_DEFINE_ERROR);
         }
-        functionMap.put(functionName, new FunctionForm(functionPara, functionBody, userVariables, previousValue));
+        FunctionForm function = new FunctionForm(functionPara, functionBody, userVariables, previousValue);
+        (new ValidationManager()).checkFunctionExpression(function, functionPara.size());
+        functionMap.put(functionName, function);
         // System.out.println("[setFunction]\n" + functionName + " \n" + functionPara + "\n" + functionBody);
     }
 }

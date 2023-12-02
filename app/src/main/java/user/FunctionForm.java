@@ -71,7 +71,7 @@ public class FunctionForm {
         }
 
         // 함수 호출
-        public String getFunction(ArrayList<Double> paraList) throws ErrorHandler{
+        public String getFunction(ArrayList<Double> paraList) throws ErrorHandler {
             // 매개변수 개수 확인
             if (paraList.size() != parameterNameList.size()) {
                 // System.err.println("paraList size and varaibleIndex size dont match");

@@ -3,12 +3,17 @@ package error;
 public class ErrorHandler extends Exception {
 
     ErrorType errorType;
+
     public ErrorHandler(ErrorType errorType)
     {
         this.errorType = errorType;
     }
 
-    public void PrintError() {
+    public ErrorType getErrorType() {
+        return this.errorType;
+    }
+
+    public void printError() {
       switch (errorType) {
         case COMMAND_ERROR:
           System.out.println("정해진 1 , 2 , 3 명령어만 입력해주세요\n");
@@ -49,6 +54,9 @@ public class ErrorHandler extends Exception {
             break;
         case FUNCTION_PARAMETER_SIZE_UNMATCH_ERROR:
             System.out.println("입력된 매개변수의 개수가 올바르지 않습니다.\n");
+            break;
+        case FUNCTION_EXPRESSION_ERROR:
+            System.out.println("정의된 함수의 수식이 올바르지 않습니다.\n");
             break;
         case FUNCTION_BRACKET_ERROR:
             System.out.println("함수의 사용 형식이 올바르지 않습니다.\n");

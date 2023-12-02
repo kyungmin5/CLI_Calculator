@@ -4,13 +4,21 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.checkerframework.checker.units.qual.degrees;
+
+import cli_calculator.Calculator;
+
+import java.util.ArrayList;
+
 import error.*;
+import user.FunctionForm;
 
 public class ValidationManager {
     public ValidationManager() {
 
     }
 
+    // 변수 정의부 유효성 체크
     public void checkVariableDefineExpression(String expression) throws ErrorHandler {
         String regex = "\\$[a-z0-9]+\\s=\\s+.+";
         Pattern pattern = Pattern.compile(regex);
@@ -20,12 +28,25 @@ public class ValidationManager {
         }
     }
 
-    public void checkFunctionDefineExpression(String expression) throws ErrorHandler {
+    // 함수 정의부 유효성 체크
+    public void checkFunctionDefine(String expression) throws ErrorHandler {
         String regex = "@[a-z0-9]+\\[(%[a-z0-9]+(?:,\\s*%[a-z0-9]+)*)?\\]+\\s=\\s+.+";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(expression);
         if (!matcher.matches()) {
             throw new ErrorHandler(ErrorType.FUNCTION_DEFINE_ERROR);
+        }
+    }
+
+    public void checkFunctionExpression(FunctionForm function, int parameterSize) throws ErrorHandler {
+        ArrayList<Double> arguments = new ArrayList<Double>();
+        for (int i=0; i<parameterSize;i++)
+            arguments.add(1.0);
+        String expression = function.getFunction(arguments);
+        try {
+            (new Calculator()).calculate(expression);    
+        } catch (ErrorHandler e) {
+            throw new ErrorHandler(ErrorType.FUNCTION_EXPRESSION_ERROR);
         }
     }
 

@@ -19,8 +19,8 @@ public class Calculator {
     private ValidationManager validationManager = new ValidationManager();
 
     // 직접 값 업데이트
-    public void setPreviousValue(double value) {
-        previousValue = value;
+    private void setPreviousValue(double value) {
+        this.previousValue = value;
     }
 
     public double calculate(String expression) throws ErrorHandler {
@@ -31,11 +31,15 @@ public class Calculator {
         expression = (String) RESULT[1]; // 수식이면 수식이 ^에 대해 () 처리만 하고 나오고, 대입이라면 = 오른쪽 부분만이 ^처리 후에 나오게 된다
         String variableName = (String) RESULT[2];
 
+        double result = 0;
+
         switch (expressionType) {
             case MATHEMATICAL: // 대입식이 아닌 경우
-                return recursiveCaluculate(expression);
+                result = recursiveCaluculate(expression);
+                setPreviousValue(result);
+                return result;
             case VARIABLE: // 변수 대입식인 경우
-                double result = recursiveCaluculate(expression);
+                result = recursiveCaluculate(expression);
                 variable.setVariable(variableName, result);
                 return result;
             case FUNCTION: // 함수 대입식인 경우
@@ -45,12 +49,14 @@ public class Calculator {
             default:
                 throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_TYPE_ERROR);
         }
+        
     }
 
     private double recursiveCaluculate(String expression) throws ErrorHandler {
         Stack<Double> numbers = new Stack<>();
         Stack<Character> operators = new Stack<>();
         int stackCount = 0;
+
 
         double finalResult = 0;
         int isOperandShouldMinus = 1;
@@ -138,27 +144,31 @@ public class Calculator {
                     i = i + endIndex;
                 } else if (operator.isOperator(currentChar)) {
                     // 연산자 우선순위를 고려하여 스택에 push
-                    if (currentChar == '-' && i + 1 < expression.length()
-                            && (Character.isDigit(expression.charAt(i + 1)) || expression.charAt(i + 1) == '('
-                                    || expression.charAt(i + 1) == '_' || expression.charAt(i + 1) == '$')
-                            || expression.charAt(i + 1) == '@') {
-                        // 이게 딱 음수 부호 피연산자의 형태. 이게 아니면 모두 연산자 처리한다
-                        // 다만 이것이 음수 부호 형태가 맞지만, 연산자가 아니라는 것은 아니므로 추가 처리가 필요하다
-                        boolean isOperator = false;
+                    if (i + 1 < expression.length()) {
+                        if (currentChar == '-'
+                                && (Character.isDigit(expression.charAt(i + 1))
+                                        || expression.charAt(i + 1) == '('
+                                        || expression.charAt(i + 1) == '_'
+                                        || expression.charAt(i + 1) == '$')
+                                || expression.charAt(i + 1) == '@') {
+                            // 이게 딱 음수 부호 피연산자의 형태. 이게 아니면 모두 연산자 처리한다
+                            // 다만 이것이 음수 부호 형태가 맞지만, 연산자가 아니라는 것은 아니므로 추가 처리가 필요하다
+                            boolean isOperator = false;
 
-                        for (int index = i - 1; index >= 0; index--) {
-                            if (expression.charAt(index) != ' ') {
-                                if (!operator.isOperator(expression.charAt(index))) {
-                                    isOperator = true;
+                            for (int index = i - 1; index >= 0; index--) {
+                                if (expression.charAt(index) != ' ') {
+                                    if (!operator.isOperator(expression.charAt(index))) {
+                                        isOperator = true;
+                                    }
+
+                                    break;
                                 }
-
-                                break;
                             }
-                        }
-                        if (!isOperator) // - 바로 앞에 또 연산자가 있어서 -가 부호로 사용될 수밖에 없을 떄
-                        {
-                            isOperandShouldMinus = -1; // 뒤에 push될 피연산자가 - 화 되야 한다는 표시를 남기고 다음으로 넘어간다
-                            continue;
+                            if (!isOperator) // - 바로 앞에 또 연산자가 있어서 -가 부호로 사용될 수밖에 없을 떄
+                            {
+                                isOperandShouldMinus = -1; // 뒤에 push될 피연산자가 - 화 되야 한다는 표시를 남기고 다음으로 넘어간다
+                                continue;
+                            }
                         }
                     }
 
@@ -192,7 +202,7 @@ public class Calculator {
             }
 
             // 남은 연산자를 모두 처리
-            while (!operators.isEmpty()) {
+            while (!operators.isEmpty() && numbers.size() >= 2) {
                 double b = numbers.pop();
                 double a = numbers.pop();
 
@@ -209,10 +219,10 @@ public class Calculator {
 
             finalResult = numbers.pop();
 
-            if (!numbers.isEmpty())
+            if (!numbers.isEmpty() || !operators.isEmpty())
                 throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
 
-        } catch (EmptyStackException e) {
+        } catch (ErrorHandler e) {
             throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
         }
 
@@ -225,7 +235,7 @@ public class Calculator {
         } else {
             finalResult = Double.parseDouble(df.format(finalResult));
         }
-        previousValue = finalResult;
+        // previousValue = finalResult;
         return finalResult;
     }
 
@@ -322,9 +332,9 @@ public class Calculator {
                 }
 
                 // 음수인 경우 확인
-                boolean isNegative = false;
+                // boolean isNegative = false;
                 if (end < sb.length() - 1 && sb.charAt(end) == '-') {
-                    isNegative = true;
+                    // isNegative = true;
                     end++;
                 }
 
@@ -395,13 +405,16 @@ public class Calculator {
             String variableName = splitExpression[0].substring(1);
             return new Tuple(variableName, splitExpression[1].trim());
         } else if (expression.charAt(0) == '@') { // '@'로 시작하면 함수 대입문
-            validationManager.checkFunctionDefineExpression(expression);
+            validationManager.checkFunctionDefine(expression);
             String[] splitExpression = expression.split("\\[");
              // 함수 이름
             String functionName = splitExpression[0].substring(1);
             splitExpression = splitExpression[1].split("\\]");
             // Parameter Array
-            ArrayList<String> parameterArray = new ArrayList<String>(Arrays.stream(splitExpression[0].split(",")).map(param -> param.trim()).toList());
+            ArrayList<String> parameterArray = new ArrayList<String>();
+            if (!splitExpression[0].isEmpty()) {
+                parameterArray = new ArrayList<String>(Arrays.stream(splitExpression[0].split(",")).map(param -> param.trim()).toList());
+            }
             // 저장될 수식
             String savedExpression = splitExpression[1].split("=")[1].trim();
             // System.out.println(functionName);
