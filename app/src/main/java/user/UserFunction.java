@@ -63,12 +63,10 @@ public class UserFunction {
             // return newFunctionBody;
 
        } else {
-            System.err.println("function name doesnt match");
             throw new ErrorHandler(ErrorType.INVALID_OPERAND_ERROR);
        }
     }
 
-    // 함수에 다른 함수가 쓰였을 시, 해당 함수의 존재여부
     // 함수에 정의되지 않은 매개변수가 쓰였을 시, 유효성 검사
     public void setFunction(
         UserVariable userVariables,
@@ -84,6 +82,5 @@ public class UserFunction {
         FunctionForm function = new FunctionForm(functionPara, functionBody, userVariables, previousValue);
         (new ValidationManager()).checkFunctionExpression(function, functionPara.size());
         functionMap.put(functionName, function);
-        // System.out.println("[setFunction]\n" + functionName + " \n" + functionPara + "\n" + functionBody);
     }
 }

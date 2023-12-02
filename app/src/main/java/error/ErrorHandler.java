@@ -16,34 +16,37 @@ public class ErrorHandler extends Exception {
     public void printError() {
       switch (errorType) {
         case COMMAND_ERROR:
-          System.out.println("정해진 1 , 2 , 3 명령어만 입력해주세요\n");
+          System.out.println("정해진 1 , 2 , 3 명령어만 입력해주세요.\n");
+          break;
+        case EMPTY_ERROR:
+          System.out.println("수식 오류입니다.\n");
           break;
         case LENGTH_ERROR:
-            System.out.println("preProcessing_길이제한 오류입니다\n");
+            System.out.println("길이제한 오류입니다.\n");
             break;
         case BRACKET_ERROR:
-            System.out.println("preProcessing_괄호쌍 오류입니다\n");
+            System.out.println("괄호쌍 오류입니다.\n");
             break;
         case DIVIDE_ZERO_ERROR:
-            System.out.println("performOperation_나누기 0 (수식) 오류입니다\n");
+            System.out.println("나누기 0 (수식) 오류입니다.\n");
             break;
         case INVALID_OPERATOR_ERROR:
-            System.out.println("performOperation_존재하지 않는 연산자 (수식) 오류입니다\n");
+            System.out.println("존재하지 않는 연산자 (수식) 오류입니다.\n");
             break;
         case INVALID_OPERAND_ERROR:
-            System.out.println("RecursiveCaluculate_피연산자 미배정 (수식) 오류입니다\n");
+            System.out.println("피연산자 미배정 (수식) 오류입니다.\n");
             break;
         case INVALID_EXPRESSION_ERROR:
-            System.out.println("RecursiveCaluculate_피연산자 공백 피연산자 (수식) 오류입니다\n");
+            System.out.println("피연산자 공백 피연산자 (수식) 오류입니다.\n");
             break;
         case INVALID_EXPRESSION_TYPE_ERROR:
-            System.out.println("RecursiveCaluculate_분류할 수 없는 수식 타입입니다\n");
+            System.out.println("분류할 수 없는 수식 타입입니다.\n");
             break;
         case INVALID_PREVIOUS_VALUE_ERROR:
             System.out.println("직전 결과 값이 비어있습니다.\n");
             break;
         case VALUE_OUT_OF_BOUND_ERROR:
-            System.out.println("값 범위 초과 오류입니다\n");
+            System.out.println("값 범위 초과 오류입니다.\n");
             break;
         // 함수, 변수 정의
         case FUNCTION_DEFINE_ERROR:

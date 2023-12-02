@@ -16,13 +16,8 @@ public class App {
         System.out.println(StaticVariableManager.scriptString);
 
         while (true) {
-            try {
-                if (printMenu()) {
-                    break;
-                }
-            } catch (ErrorHandler e) {
-                e.printError();
-            }
+            try { if (printMenu()) break; }
+            catch (ErrorHandler e) { e.printError(); }
         }
     }
 

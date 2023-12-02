@@ -3,7 +3,6 @@ package cli_calculator;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EmptyStackException;
 import java.util.Stack;
 
 import manager.*;
@@ -23,7 +22,11 @@ public class Calculator {
         this.previousValue = value;
     }
 
+    // 계산하기 main 함수
     public double calculate(String expression) throws ErrorHandler {
+        if (expression.isBlank()) {
+            throw new ErrorHandler(ErrorType.EMPTY_ERROR);
+        }
         Object[] RESULT = preProcessing(expression);
 
         // 입력된 문자열의 타입을 판별
@@ -52,6 +55,7 @@ public class Calculator {
         
     }
 
+    // 재귀 계산
     private double recursiveCaluculate(String expression) throws ErrorHandler {
         Stack<Double> numbers = new Stack<>();
         Stack<Character> operators = new Stack<>();
@@ -135,9 +139,7 @@ public class Calculator {
 
                     // 함수 값 
                     String functionExpression = function.getFunction(functionName, argumentList);
-                    // System.out.println("[functionExpression]: " + functionExpression);
                     Double result = recursiveCaluculate(functionExpression);
-                    // System.out.println("[result]: " + result);
 
                     numbers.push(result * isOperandShouldMinus);
                     isOperandShouldMinus = 1;
@@ -258,12 +260,12 @@ public class Calculator {
         return endIndex + 1;
     }
 
+    // 인자 값 계산하기
     private ArrayList<Double> calculateArguments(String argumentsString) throws ErrorHandler {
         ArrayList<Double> argumentList = new ArrayList<Double>();
         int index = 0;
         int bracketFlag = 0;
         for (int i = index; i < argumentsString.length(); i++) {
-            // System.out.println(i);
             if (argumentsString.charAt(i) == '[') {
                 bracketFlag++;
             }
@@ -286,7 +288,7 @@ public class Calculator {
         }
         return argumentList;
     }
-
+    
     // Object[수식의 타입, 표현식, 변수 혹은 함수 이름, 매개변수]
     private Object[] preProcessing(String rawExpression) throws ErrorHandler {         
         rawExpression = rawExpression.trim();
@@ -309,8 +311,6 @@ public class Calculator {
                 expressionType = ExpressionType.FUNCTION;
             }
         }
-        
-        // System.out.println("[ExpressionType]: " + expressionType);
 
         validationManager.checkBracketPair(expression);
         expression = optimizeForPower(expression);
@@ -417,12 +417,9 @@ public class Calculator {
             }
             // 저장될 수식
             String savedExpression = splitExpression[1].split("=")[1].trim();
-            // System.out.println(functionName);
-            // System.out.println(savedExpression);
             return new Tuple(functionName, savedExpression, parameterArray);
         }
         throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
     }
-
 
 }

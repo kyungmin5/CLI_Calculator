@@ -38,6 +38,7 @@ public class ValidationManager {
         }
     }
 
+    // 함수 수식부 유효성 체크
     public void checkFunctionExpression(FunctionForm function, int parameterSize) throws ErrorHandler {
         ArrayList<Double> arguments = new ArrayList<Double>();
         for (int i=0; i<parameterSize;i++)

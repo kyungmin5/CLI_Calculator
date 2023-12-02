@@ -22,8 +22,6 @@ public class FunctionForm {
             this.parameterNameList = para;
             changeVariable(functionBody, variables);
             changePreviousValue(functionBody, previousValue);
-
-            System.out.println("[FunctionForm]\n" + para + " \n" + functionBody + "\n");
         }
 
         // 사용된 변수 치환
@@ -74,7 +72,6 @@ public class FunctionForm {
         public String getFunction(ArrayList<Double> paraList) throws ErrorHandler {
             // 매개변수 개수 확인
             if (paraList.size() != parameterNameList.size()) {
-                // System.err.println("paraList size and varaibleIndex size dont match");
                 throw new ErrorHandler(ErrorType.FUNCTION_PARAMETER_SIZE_UNMATCH_ERROR);
             }
 

@@ -5,6 +5,7 @@ public enum ErrorType {
   COMMAND_ERROR,
   // Experssion Error
   LENGTH_ERROR, // 길이 초과
+  EMPTY_ERROR, // 빈 입력
   BRACKET_ERROR, // 괄호쌍이 맞지 않음
   DIVIDE_ZERO_ERROR, // 0으로 나누기
   INVALID_OPERATOR_ERROR, // 올바르지 않은 연산자 오류
