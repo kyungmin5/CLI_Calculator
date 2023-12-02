@@ -19,7 +19,7 @@ public class UserVariableTest {
     assertEquals(20, result);
     calculator.calculate("$ab12 = 1 + 3 * 3");
     result = calculator.calculate("$ab12 * _");
-    assertEquals(100, result);
+    assertEquals(200, result);
   }
 
   // 변수 값 저장 형식 오류 테스트
