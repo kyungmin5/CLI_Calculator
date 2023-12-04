@@ -16,13 +16,8 @@ public class App {
         System.out.println(StaticVariableManager.scriptString);
 
         while (true) {
-            try {
-                if (printMenu()) {
-                    break;
-                }
-            } catch (ErrorHandler e) {
-                e.PrintError();
-            }
+            try { if (printMenu()) break; }
+            catch (ErrorHandler e) { e.printError(); }
         }
     }
 
@@ -61,7 +56,7 @@ public class App {
 
             try {
                 double result = calculator.calculate(expression);
-
+                
                 if (Double.isNaN(result)) {
                     System.out.println("SUCCESS");
                 } else {
@@ -72,11 +67,11 @@ public class App {
                         numberFormat.setMaximumFractionDigits(6);
                         numberFormat.setGroupingUsed(false);
                         System.out.println(numberFormat.format(result));
-                    }
+                    }                    
                 }
 
             } catch (ErrorHandler e) {
-                e.PrintError();
+                e.printError();
             }
         }
     }

@@ -29,6 +29,12 @@ application {
     mainClass = 'cli_calculator.App'
 }
 
+jar {
+    manifest {
+        attributes 'Main-Class': 'cli_calculator.App'
+    }
+}
+
 tasks.named('test') {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()

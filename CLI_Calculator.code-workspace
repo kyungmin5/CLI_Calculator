@@ -1,0 +1,10 @@
+{
+	"folders": [
+		{
+			"path": "../../../2023-2학기/전공기초프로젝트2/CLI_Calculator"
+		}
+	],
+	"settings": {
+		"java.compile.nullAnalysis.mode": "automatic"
+	}
+}
