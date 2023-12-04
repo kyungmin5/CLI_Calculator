@@ -35,7 +35,7 @@ public class Calculator {
         String variableName = (String) RESULT[2];
 
         double result = 0;
-
+ 
         switch (expressionType) {
             case MATHEMATICAL: // 대입식이 아닌 경우
                 result = recursiveCaluculate(expression);
