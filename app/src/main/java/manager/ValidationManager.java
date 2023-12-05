@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import error.*;
+import operator.Operator;
+import operator.OperatorType;
 import cli_calculator.Tuple;
 import user.FunctionForm;
 
@@ -21,7 +23,7 @@ public class ValidationManager {
 
     }
 
-    // ë³€ìˆ˜ ì •ì˜ë¶€ ìœ íš¨ì„± ì²´í¬
+    // ë³??ˆ˜ ? •?˜ë¶? ?œ ?š¨?„± ì²´í¬
     public void checkVariableDefineExpression(String expression) throws ErrorHandler {
         String regex = "\\$[a-z0-9]+\\s=\\s+.+";
         Pattern pattern = Pattern.compile(regex);
@@ -31,7 +33,7 @@ public class ValidationManager {
         }
     }
 
-    // í•¨ìˆ˜ ì •ì˜ë¶€ ìœ íš¨ì„± ì²´í¬
+    // ?•¨?ˆ˜ ? •?˜ë¶? ?œ ?š¨?„± ì²´í¬
     public void checkFunctionDefine(String expression) throws ErrorHandler {
         String regex = "@[a-z0-9]+\\[(%[a-z0-9]+(?:,\\s*%[a-z0-9]+)*)?\\]+\\s=\\s+.+";
         Pattern pattern = Pattern.compile(regex);
@@ -41,20 +43,121 @@ public class ValidationManager {
         }
     }
 
-    // í•¨ìˆ˜ ìˆ˜ì‹ë¶€ ìœ íš¨ì„± ì²´í¬
+    // ?•¨?ˆ˜ ?ˆ˜?‹ë¶? ?œ ?š¨?„± ì²´í¬
     public void checkFunctionExpression(FunctionForm function, int parameterSize) throws ErrorHandler {
         ArrayList<Double> arguments = new ArrayList<Double>();
         for (int i=0; i<parameterSize;i++)
-            arguments.add(1.0);
+            arguments.add(0.0);
         String expression = function.getFunction(arguments);
         try {
-            (new Calculator()).calculate(expression);    
+            recursiveCaluculate(expression);    
         } catch (ErrorHandler e) {
             throw new ErrorHandler(ErrorType.FUNCTION_EXPRESSION_ERROR);
         }
     }
 
-    // ê´„í˜¸ìŒ ì²´í¬
+    private void recursiveCaluculate(String expression) throws ErrorHandler {
+        Stack<Double> numbers = new Stack<>();
+        Stack<Character> operators = new Stack<>();
+        int stackCount = 0;
+
+        Operator operator = new Operator();
+
+        try {
+            for (int i = 0; i < expression.length(); i++) {
+                char currentChar = expression.charAt(i);
+
+                if (currentChar == ' ') {
+                    continue; // °ø¹é ¹®ÀÚ´Â ¹«½Ã
+                }
+
+                if (Character.isDigit(currentChar) || currentChar == '.') {
+                    // ¼ıÀÚ¸¦ ÃßÃâÇÏ¿© ½ºÅÃ¿¡ ÀúÀå
+                    StringBuilder numBuilder = new StringBuilder();
+                    while (i < expression.length()
+                            && (Character.isDigit(expression.charAt(i)) || expression.charAt(i) == '.')) {
+                        numBuilder.append(expression.charAt(i));
+                        i++;
+                    }
+                    numbers.push(0.0);
+                    i--; // ¼ıÀÚ ÃßÃâ ÈÄ ÀÎµ¦½º º¹¿ø
+                } else if (currentChar == '(') {
+
+                    stackCount++;
+                    int j = i + 1;
+                    for (; j < expression.length() && stackCount > 0; j++) {
+                        if (expression.charAt(j) == '(') {
+                            stackCount++;
+                        } else if (expression.charAt(j) == ')') {
+                            stackCount--;
+                        }
+                    }
+                    numbers.push(0.0);
+                    i = j - 1; // ¿©±â°¡ ½ÇÁ¦ ) °¡ ÀÖ´Â ÀÎµ¦½º. i¸¦ ) ÀÇ index·Î º¸³»¹ö¸°´Ù.
+                }else if (operator.isOperator(currentChar)) {
+                    // ¿¬»êÀÚ ¿ì¼±¼øÀ§¸¦ °í·ÁÇÏ¿© ½ºÅÃ¿¡ push
+                    if (i + 1 < expression.length()) {
+                        if (currentChar == '-'
+                                && (Character.isDigit(expression.charAt(i + 1))
+                                        || expression.charAt(i + 1) == '(')) {
+                            // ÀÌ°Ô µü À½¼ö ºÎÈ£ ÇÇ¿¬»êÀÚÀÇ ÇüÅÂ. ÀÌ°Ô ¾Æ´Ï¸é ¸ğµÎ ¿¬»êÀÚ Ã³¸®ÇÑ´Ù
+                            // ´Ù¸¸ ÀÌ°ÍÀÌ À½¼ö ºÎÈ£ ÇüÅÂ°¡ ¸ÂÁö¸¸, ¿¬»êÀÚ°¡ ¾Æ´Ï¶ó´Â °ÍÀº ¾Æ´Ï¹Ç·Î Ãß°¡ Ã³¸®°¡ ÇÊ¿äÇÏ´Ù
+                            boolean isOperator = false;
+
+                            for (int index = i - 1; index >= 0; index--) {
+                                if (expression.charAt(index) != ' ') {
+                                    if (!operator.isOperator(expression.charAt(index))) {
+                                        isOperator = true;
+                                    }
+
+                                    break;
+                                }
+                            }
+                            if (!isOperator) // - ¹Ù·Î ¾Õ¿¡ ¶Ç ¿¬»êÀÚ°¡ ÀÖ¾î¼­ -°¡ ºÎÈ£·Î »ç¿ëµÉ ¼ö¹Û¿¡ ¾øÀ» ‹š
+                            {
+                                continue;
+                            }
+                        }
+                    }
+
+                    // currnetCharÀÌ + - ÀÌ¸é ¹İµå½Ã ½ÇÇà
+                    while (!operators.isEmpty() && Operator.getType(operators.peek()).getPriority() >= Operator.getType(currentChar).getPriority()) {
+                        if(numbers.isEmpty()) throw new ErrorHandler(ErrorType.FUNCTION_EXPRESSION_ERROR);
+                        numbers.pop();
+                        if(numbers.isEmpty()) throw new ErrorHandler(ErrorType.FUNCTION_EXPRESSION_ERROR);
+                        numbers.pop();
+                        if(operators.isEmpty()) throw new ErrorHandler(ErrorType.FUNCTION_EXPRESSION_ERROR);
+                        operators.pop();
+                        numbers.push(0.0);
+                        // Á÷Àü°ª ¾÷µ¥ÀÌÆ®
+                    }
+                    operators.push('+');
+                } 
+            }
+
+            // ³²Àº ¿¬»êÀÚ¸¦ ¸ğµÎ Ã³¸®
+            while (!operators.isEmpty() && numbers.size() >= 2) {
+                if(numbers.isEmpty()) throw new ErrorHandler(ErrorType.FUNCTION_EXPRESSION_ERROR);
+                numbers.pop();
+                if(numbers.isEmpty()) throw new ErrorHandler(ErrorType.FUNCTION_EXPRESSION_ERROR);
+                numbers.pop();
+                if(operators.isEmpty()) throw new ErrorHandler(ErrorType.FUNCTION_EXPRESSION_ERROR);
+                operators.pop();
+                numbers.push(0.0);
+                // Á÷Àü°ª ¾÷µ¥ÀÌÆ®
+            }
+
+            numbers.pop();
+
+            if (!numbers.isEmpty() || !operators.isEmpty())
+                throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
+
+        } catch (ErrorHandler e) {
+            throw e;
+        }
+    }
+
+    // ê´„í˜¸?Œ ì²´í¬
     public boolean checkBracketPair(String expression) throws ErrorHandler {
         Stack<Character> smallBracket = new Stack<>();
         Stack<Character> bigBracket = new Stack<>();
@@ -83,7 +186,7 @@ public class ValidationManager {
         throw new ErrorHandler(ErrorType.BRACKET_ERROR);
     }
 
-    // ìˆ˜ì‹ì˜ ì—°ì‚°ì, í”¼ì—°ì‚°ì ë¬¸ë²•í™•ì¸
+    // ?ˆ˜?‹?˜ ?—°?‚°?, ?”¼?—°?‚°? ë¬¸ë²•?™•?¸
     public boolean checkValidExpression(String expression) {
         for (int i = 0; i < expression.length(); i++) {
             if (expression.charAt(i) == '+' || expression.charAt(i) == '-'
@@ -114,7 +217,7 @@ public class ValidationManager {
         return true;
     }
 
-    // í”¼ì—°ì‚°ìì™€ ì—°ì‚° ê²°ê³¼ ê°’ì˜ ìœ íš¨ ë²”ìœ„ ì²´í¬
+    // ?”¼?—°?‚°???? ?—°?‚° ê²°ê³¼ ê°’ì˜ ?œ ?š¨ ë²”ìœ„ ì²´í¬
     public void checkRangeInPerform(double lhs, double rhs, double result) throws ErrorHandler {
         boolean isValidLhs = (lhs >= -Double.MAX_VALUE && lhs <= Double.MAX_VALUE);
         boolean isValidRhs = (rhs >= -Double.MAX_VALUE && rhs <= Double.MAX_VALUE);
@@ -125,20 +228,20 @@ public class ValidationManager {
         throw new ErrorHandler(ErrorType.VALUE_OUT_OF_BOUND_ERROR);
     }
 
-    // =, $, @ ë¬¸ìë¡œ í•¨ìˆ˜ í˜¹ì€ ë³€ìˆ˜ ëŒ€ì…ì‹ì¸ì§€ íŒë³„
+    // =, $, @ ë¬¸ìë¡? ?•¨?ˆ˜ ?˜¹??? ë³??ˆ˜ ????…?‹?¸ì§? ?Œë³?
     public Tuple checkExpressionType(String expression) throws ErrorHandler {
         if (expression.length() < 1 || !expression.contains("="))
-            return new Tuple("", expression); // ì¼ë°˜ ìˆ˜ì‹
+            return new Tuple("", expression); // ?¼ë°? ?ˆ˜?‹
         expression = expression.trim();
-        if (expression.charAt(0) == '$') { // '$'ë¡œ ì‹œì‘í•˜ë©´ ë³€ìˆ˜ ëŒ€ì…ë¬¸
+        if (expression.charAt(0) == '$') { // '$'ë¡? ?‹œ?‘?•˜ë©? ë³??ˆ˜ ????…ë¬?
             checkVariableDefineExpression(expression);
             String[] splitExpression = expression.split(" =");
             String variableName = splitExpression[0].substring(1);
             return new Tuple(variableName, splitExpression[1].trim());
-        } else if (expression.charAt(0) == '@') { // '@'ë¡œ ì‹œì‘í•˜ë©´ í•¨ìˆ˜ ëŒ€ì…ë¬¸
+        } else if (expression.charAt(0) == '@') { // '@'ë¡? ?‹œ?‘?•˜ë©? ?•¨?ˆ˜ ????…ë¬?
             checkFunctionDefine(expression);
             String[] splitExpression = expression.split("\\[");
-             // í•¨ìˆ˜ ì´ë¦„
+             // ?•¨?ˆ˜ ?´ë¦?
             String functionName = splitExpression[0].substring(1);
             splitExpression = splitExpression[1].split("\\]");
             // Parameter Array
@@ -146,7 +249,7 @@ public class ValidationManager {
             if (!splitExpression[0].isEmpty()) {
                 parameterArray = new ArrayList<String>(Arrays.stream(splitExpression[0].split(",")).map(param -> param.trim()).toList());
             }
-            // ì €ì¥ë  ìˆ˜ì‹
+            // ????¥?  ?ˆ˜?‹
             String savedExpression = splitExpression[1].split("=")[1].trim();
             return new Tuple(functionName, savedExpression, parameterArray);
         }
