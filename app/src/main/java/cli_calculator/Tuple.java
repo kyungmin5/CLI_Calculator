@@ -7,12 +7,12 @@ public class Tuple {
   private String y;
   private ArrayList<String> z = null;
 
-  Tuple(String x, String y) {
+  public Tuple(String x, String y) {
     this.x = x;
     this.y = y;
   }
 
-  Tuple(String x, String y, ArrayList<String> z) {
+  public Tuple(String x, String y, ArrayList<String> z) {
     this.x = x;
     this.y = y;
     this.z = z;

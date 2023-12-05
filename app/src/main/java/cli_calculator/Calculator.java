@@ -298,7 +298,7 @@ public class Calculator {
             
         // 입력된 문자열의 타입
         ExpressionType expressionType = ExpressionType.MATHEMATICAL;
-        Tuple resultPair = checkSubstitution(rawExpression);
+        Tuple resultPair = validationManager.checkExpressionType(rawExpression);
         String variableName = resultPair.first();
         String expression = resultPair.second();
         ArrayList<String> paras = resultPair.third();
@@ -392,34 +392,6 @@ public class Calculator {
         }
 
         return sb.toString();
-    }
-
-    // =, $, @ 문자로 함수 혹은 변수 대입식인지 판별
-    private Tuple checkSubstitution(String expression) throws ErrorHandler {
-        if (expression.length() < 1 || !expression.contains("="))
-            return new Tuple("", expression); // 일반 수식
-        expression = expression.trim();
-        if (expression.charAt(0) == '$') { // '$'로 시작하면 변수 대입문
-            validationManager.checkVariableDefineExpression(expression);
-            String[] splitExpression = expression.split(" =");
-            String variableName = splitExpression[0].substring(1);
-            return new Tuple(variableName, splitExpression[1].trim());
-        } else if (expression.charAt(0) == '@') { // '@'로 시작하면 함수 대입문
-            validationManager.checkFunctionDefine(expression);
-            String[] splitExpression = expression.split("\\[");
-             // 함수 이름
-            String functionName = splitExpression[0].substring(1);
-            splitExpression = splitExpression[1].split("\\]");
-            // Parameter Array
-            ArrayList<String> parameterArray = new ArrayList<String>();
-            if (!splitExpression[0].isEmpty()) {
-                parameterArray = new ArrayList<String>(Arrays.stream(splitExpression[0].split(",")).map(param -> param.trim()).toList());
-            }
-            // 저장될 수식
-            String savedExpression = splitExpression[1].split("=")[1].trim();
-            return new Tuple(functionName, savedExpression, parameterArray);
-        }
-        throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_ERROR);
     }
 
 }
