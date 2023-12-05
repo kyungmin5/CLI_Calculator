@@ -34,7 +34,8 @@ jobs:
       run: chmod +x gradlew
     
     - name: Test with Gradle
-      run: ./gradlew --info test
+      run: ./gradlew test
+    #--info test
     # - name: Run JUnit Tests
     #   run: java -jar lib/junit-platform-console-standalone-1.10.0.jar --class-path . --scan-classpath
 
