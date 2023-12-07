@@ -20,7 +20,7 @@ public class FunctionForm {
             Double previousValue) throws ErrorHandler {
         this.parameterNameList = para;
         changeVariable(functionBody, variables);
-        changePreviousValue(functionBody, previousValue);
+        changePreviousValue(this.functionBody, previousValue);
     }
 
     // 사용된 변수 치환
@@ -33,7 +33,7 @@ public class FunctionForm {
         for (String string : variables) {
             String variableName = "\\$" + string + "\\b";
             pattern = Pattern.compile(variableName);
-            Matcher matcher = pattern.matcher(expression);
+             Matcher matcher = pattern.matcher(expression);
 
             if (matcher.find()) {
                 expression = expression.replaceAll(variableName, userVariables.getVariable(string).toString());
