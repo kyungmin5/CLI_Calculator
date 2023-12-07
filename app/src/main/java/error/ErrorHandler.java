@@ -46,7 +46,7 @@ public class ErrorHandler extends Exception {
             System.out.println("직전 결과 값이 비어있습니다.\n");
             break;
         case INVALID_CHARACTER_ERROR:
-            System.out.println("사용할 수 없는 문자가 포함되었습니다.\n");
+            System.out.println("올바르지 않은 피연산자 형식이 포함되었습니다.\n");
             break;
         case VALUE_OUT_OF_BOUND_ERROR:
             System.out.println("값 범위 초과 오류입니다.\n");
