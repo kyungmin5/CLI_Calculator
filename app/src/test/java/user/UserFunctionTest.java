@@ -139,7 +139,7 @@ public class UserFunctionTest {
       calculator.calculate("@a123[] = %x + 3");
     });
     assertThrows(ErrorHandler.class, () -> {
-      calculator.calculate("@a[%x] = %x + %y");
+      calculator.calculate("@a[%x] = %x + %y -");
     });
     assertThrows(ErrorHandler.class, () -> {
       calculator.calculate("@three[%x, %y] = %x + %y - %z");

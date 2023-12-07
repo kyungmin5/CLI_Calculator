@@ -174,7 +174,6 @@ public class Calculator {
                         }
                     }
 
-                    // currnetChar이 + - 이면 반드시 실행
                     while (!operators.isEmpty() && precedence(operators.peek()) >= precedence(currentChar)) {
 
                         double b = numbers.pop();
