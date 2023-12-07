@@ -158,7 +158,7 @@ public class ValidationManager {
     }
 
     // 괄호쌍 체크
-    public boolean checkBracketPair(String expression) throws ErrorHandler {
+    public boolean checkBracketPair(String expression) {
         Stack<Character> smallBracket = new Stack<>();
         Stack<Character> bigBracket = new Stack<>();
 
@@ -182,8 +182,7 @@ public class ValidationManager {
 
         if (smallBracket.empty() && bigBracket.empty())
             return true;
-
-        throw new ErrorHandler(ErrorType.BRACKET_ERROR);
+        return false;
     }
 
     // 수식의 연산자, 피연산자 문법확인
