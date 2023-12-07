@@ -44,6 +44,8 @@ public class ValidationManager {
     }
 
     // 함수 수식부 유효성 체크
+    // 핵심 아이디어는, 실제로 계산을 돌려봐서 에러가 있으면 no, 없으면 yes로 받습니다
+    // 계산에 필요한 연산자는 전부 +, 피연산자는 모두 0으로 두고 계산해서, 계산식의 형태가 올바른지만 확인합니다
     public void checkFunctionExpression(FunctionForm function, int parameterSize) throws ErrorHandler {
         ArrayList<Double> arguments = new ArrayList<Double>();
         for (int i=0; i<parameterSize;i++)
@@ -61,11 +63,11 @@ public class ValidationManager {
                                 char currentChar = expression.charAt(i);
 
                                 if (currentChar == ' ') {
-                                    continue; // ���� ���ڴ� ����
+                                    continue; // 공백 문자는 무시
                                 }
 
                                 if (Character.isDigit(currentChar) || currentChar == '.') {
-                                    // ���ڸ� �����Ͽ� ���ÿ� ����
+                                    // 숫자를 추출하여 스택에 저장
                                     StringBuilder numBuilder = new StringBuilder();
                                     while (i < expression.length()
                                             && (Character.isDigit(expression.charAt(i)) || expression.charAt(i) == '.')) {
@@ -73,7 +75,7 @@ public class ValidationManager {
                                         i++;
                                     }
                                     numbers.push(0.0);
-                                    i--; // ���� ���� �� �ε��� ����
+                                    i--; // 숫자 추출 후 인덱스 복원
                                 } else if (currentChar == '(') {
 
                                     stackCount++;
@@ -86,15 +88,15 @@ public class ValidationManager {
                                         }
                                     }
                                     numbers.push(0.0);
-                                    i = j - 1; // ���Ⱑ ���� ) �� �ִ� �ε���. i�� ) �� index�� ����������.
+                                    i = j - 1; // 여기가 실제 ) 가 있는 인덱스. i를 ) 의 index로 보내버린다.
                                 }else if (operator.isOperator(currentChar)) {
-                                    // ������ �켱������ �����Ͽ� ���ÿ� push
+                                    // 연산자 우선순위를 고려하여 스택에 push
                                     if (i + 1 < expression.length()) {
                                         if (currentChar == '-'
                                                 && (Character.isDigit(expression.charAt(i + 1))
                                                         || expression.charAt(i + 1) == '(')) {
-                                            // �̰� �� ���� ��ȣ �ǿ������� ����. �̰� �ƴϸ� ��� ������ ó���Ѵ�
-                                            // �ٸ� �̰��� ���� ��ȣ ���°� ������, �����ڰ� �ƴ϶�� ���� �ƴϹǷ� �߰� ó���� �ʿ��ϴ�
+                                            // 이게 딱 음수 부호 피연산자의 형태. 이게 아니면 모두 연산자 처리한다
+                                            // 다만 이것이 음수 부호 형태가 맞지만, 연산자가 아니라는 것은 아니므로 추가 처리가 필요하다
                                             boolean isOperator = false;
 
                                             for (int index = i - 1; index >= 0; index--) {
@@ -106,14 +108,13 @@ public class ValidationManager {
                                                     break;
                                                 }
                                             }
-                                            if (!isOperator) // - �ٷ� �տ� �� �����ڰ� �־ -�� ��ȣ�� ���� ���ۿ� ���� ��
+                                            if (!isOperator) // - 바로 앞에 또 연산자가 있어서 -가 부호로 사용될 수밖에 없을 떄
                                             {
                                                 continue;
                                             }
                                         }
                                     }
 
-                                    // currnetChar�� + - �̸� �ݵ�� ����
                                     while (!operators.isEmpty() && Operator.getType(operators.peek()).getPriority() >= Operator.getType(currentChar).getPriority()) {
                                         if(numbers.isEmpty()) throw new ErrorHandler(ErrorType.FUNCTION_EXPRESSION_ERROR);
                                         numbers.pop();
@@ -121,14 +122,16 @@ public class ValidationManager {
                                         numbers.pop();
                                         if(operators.isEmpty()) throw new ErrorHandler(ErrorType.FUNCTION_EXPRESSION_ERROR);
                                         operators.pop();
+                                        // 그냥 뽑기만 하고, 실제로 사용하는 것은 연산자면 +, 피연산자면 0입니다
+                                        // 그리고 stack empty 오류는 자체적으로 오류를 내서, pop 하기전에 오류 날 거 같으면 사전에 오류를 만들어서 던지도록 했습니다
+
                                         numbers.push(0.0);
-                                        // ������ ������Ʈ
                                     }
                                     operators.push('+');
                                 } 
                             }
 
-                            // ���� �����ڸ� ��� ó��
+                            // 남은 연산자를 모두 처리
                             while (!operators.isEmpty() && numbers.size() >= 2) {
                                 if(numbers.isEmpty()) throw new ErrorHandler(ErrorType.FUNCTION_EXPRESSION_ERROR);
                                 numbers.pop();
@@ -136,8 +139,9 @@ public class ValidationManager {
                                 numbers.pop();
                                 if(operators.isEmpty()) throw new ErrorHandler(ErrorType.FUNCTION_EXPRESSION_ERROR);
                                 operators.pop();
+                                // 그냥 뽑기만 하고, 실제로 사용하는 것은 연산자면 +, 피연산자면 0입니다
+                                // 그리고 stack empty 오류는 자체적으로 오류를 내서, pop 하기전에 오류 날 거 같으면 사전에 오류를 만들어서 던지도록 했습니다
                                 numbers.push(0.0);
-                                // ������ ������Ʈ
                             }
 
                             numbers.pop();
@@ -227,17 +231,17 @@ public class ValidationManager {
     //  =, $, @ 문자로 함수 혹은 변수 대입식인지 판별
     public Tuple checkExpressionType(String expression) throws ErrorHandler {
         if (expression.length() < 1 || !expression.contains("="))
-            return new Tuple("", expression); // ?���? ?��?��
+            return new Tuple("", expression); // 일반 수식
         expression = expression.trim();
-        if (expression.charAt(0) == '$') { // '$'�? ?��?��?���? �??�� ????���?
+        if (expression.charAt(0) == '$') { // '$'로 시작하면 변수 대입문
             checkVariableDefineExpression(expression);
             String[] splitExpression = expression.split(" =");
             String variableName = splitExpression[0].substring(1);
             return new Tuple(variableName, splitExpression[1].trim());
-        } else if (expression.charAt(0) == '@') { // '@'�? ?��?��?���? ?��?�� ????���?
+        } else if (expression.charAt(0) == '@') {  // '@'로 시작하면 함수 대입문
             checkFunctionDefine(expression);
             String[] splitExpression = expression.split("\\[");
-             // ?��?�� ?���?
+             // 함수 이름
             String functionName = splitExpression[0].substring(1);
             splitExpression = splitExpression[1].split("\\]");
             // Parameter Array
@@ -245,7 +249,7 @@ public class ValidationManager {
             if (!splitExpression[0].isEmpty()) {
                 parameterArray = new ArrayList<String>(Arrays.stream(splitExpression[0].split(",")).map(param -> param.trim()).toList());
             }
-            // ????��?�� ?��?��
+            // 저장될 수식
             String savedExpression = splitExpression[1].split("=")[1].trim();
             return new Tuple(functionName, savedExpression, parameterArray);
         }
