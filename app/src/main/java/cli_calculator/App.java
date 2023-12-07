@@ -21,7 +21,7 @@ public class App {
         }
     }
 
-    // ¸Þ´º Ãâ·Â
+    // ë©”ë‰´ ê¸°ëŠ¥
     private static boolean printMenu() throws ErrorHandler {
         System.out.print(StaticVariableManager.menuString + "> ");
         String expression = scanner.nextLine();
@@ -42,7 +42,7 @@ public class App {
         return false;
     }
 
-    // °è»ê±â ÀÛ¾÷
+    // ê³„ì‚° ê¸°ëŠ¥
     private static void generateCalculator() {
         Calculator calculator = new Calculator();
 
