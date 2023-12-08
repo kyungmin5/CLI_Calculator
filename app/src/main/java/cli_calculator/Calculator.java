@@ -311,7 +311,10 @@ public class Calculator {
             }
         }
 
-        validationManager.checkBracketPair(expression);
+        if(!validationManager.checkBracketPair(expression))
+        {
+            throw new ErrorHandler(ErrorType.BRACKET_ERROR); 
+        }
         expression = optimizeForPower(expression);
 
         return new Object[] { expressionType, expression, variableName, paras };
