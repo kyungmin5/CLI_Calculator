@@ -67,6 +67,9 @@ public class ErrorHandler extends Exception {
         case FUNCTION_BRACKET_ERROR:
             System.out.println("함수의 사용 형식이 올바르지 않습니다.\n");
             break;
+        case FUNCTION_PARAMETER_ERROR:
+            System.out.println("함수의 매개변수가 올바르지 않습니다.\n");
+            break;
         case VARIABLE_DEFINE_ERROR:
             System.out.println("변수 정의부 문법 오류입니다. $변수명 = 수식\n");
             break;

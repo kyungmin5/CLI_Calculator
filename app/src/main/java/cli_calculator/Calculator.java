@@ -4,6 +4,8 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import manager.*;
 import error.*;
@@ -52,7 +54,7 @@ public class Calculator {
             default:
                 throw new ErrorHandler(ErrorType.INVALID_EXPRESSION_TYPE_ERROR);
         }
-        
+
     }
 
     // 재귀 계산
@@ -60,7 +62,6 @@ public class Calculator {
         Stack<Double> numbers = new Stack<>();
         Stack<Character> operators = new Stack<>();
         int stackCount = 0;
-
 
         double finalResult = 0;
         int isOperandShouldMinus = 1;
@@ -84,9 +85,9 @@ public class Calculator {
                         i++;
                     }
                     try {
-                        double num = Double.parseDouble(numBuilder.toString());    
+                        double num = Double.parseDouble(numBuilder.toString());
                         numbers.push(num * isOperandShouldMinus);
-                    } catch  (NumberFormatException e) {
+                    } catch (NumberFormatException e) {
                         throw new ErrorHandler(ErrorType.INVALID_OPERAND_ERROR);
                     }
                     // 직전값 업데이트
@@ -110,14 +111,22 @@ public class Calculator {
                 } else if (currentChar == '$') {
                     int index = 1;
                     String variableName = "";
-                    for (; index + i < expression.length() && expression.charAt(index + i) != ' '; index++) {
+                    String regex = "[a-z0-9]";
+                    Pattern pattern = Pattern.compile(regex);
+                    
+                    for (; index + i < expression.length(); index++) {
+                        String charString = Character.toString(expression.charAt(index + i));
+                        Matcher matcher = pattern.matcher(charString);
+                        if (!matcher.matches()) {    
+                            break;
+                        }
                         variableName += expression.charAt(index + i);
                     }
                     numbers.push(variable.getVariable(variableName) * isOperandShouldMinus);
                     isOperandShouldMinus = 1;
-                    i = index + i;
+                    i = index + i - 1;
                 } else if (currentChar == '@') {
-                    String subExpression = expression.substring(i+1);
+                    String subExpression = expression.substring(i + 1);
                     // 함수 이름 파싱
                     String functionName = subExpression;
                     if (functionName.contains("[") && functionName.contains("]")) {
@@ -126,11 +135,11 @@ public class Calculator {
                         throw new ErrorHandler(ErrorType.FUNCTION_BRACKET_ERROR);
                     }
                     // int index = i + subExpression.indexOf("]")+1;
-                    
+
                     // @r[%d] = %d + 1
-                    //  @t[%q,%w] = %q + %w
-                    // @d[%a,%s,%d,     %f] = %a + %a + %s + %f
-                    // @d[@t[@r[2],@r[2]],(5-1),@r[1234],@d[1,3,    5   , 7]]  - 10 + @t[   2,4]
+                    // @t[%q,%w] = %q + %w
+                    // @d[%a,%s,%d, %f] = %a + %a + %s + %f
+                    // @d[@t[@r[2],@r[2]],(5-1),@r[1234],@d[1,3, 5 , 7]] - 10 + @t[ 2,4]
 
                     // 파라미터 파싱
                     int endIndex = closeBracketIndex(subExpression);
@@ -141,7 +150,7 @@ public class Calculator {
                         argumentList = calculateArguments(argumentsString);
                     }
 
-                    // 함수 값 
+                    // 함수 값
                     String functionExpression = function.getFunction(functionName, argumentList);
                     Double result = recursiveCaluculate(functionExpression);
 
@@ -280,6 +289,9 @@ public class Calculator {
             if ((argumentsString.charAt(i) == ',')) {
                 if (bracketFlag == 0) {
                     String argumentString = argumentsString.substring(index, i);
+                    if (argumentString.isBlank()) {
+                        throw new ErrorHandler(ErrorType.FUNCTION_PARAMETER_ERROR);
+                    }
                     double argumentValue = recursiveCaluculate(argumentString);
                     argumentList.add(argumentValue);
                     index = i + 1;
@@ -287,20 +299,23 @@ public class Calculator {
             }
             if (i == argumentsString.length() - 1) {
                 String argumentString = argumentsString.substring(index);
+                if (argumentString.isBlank()) {
+                    throw new ErrorHandler(ErrorType.FUNCTION_PARAMETER_ERROR);
+                }
                 double argumentValue = recursiveCaluculate(argumentString);
                 argumentList.add(argumentValue);
             }
         }
         return argumentList;
     }
-    
+
     // Object[수식의 타입, 표현식, 변수 혹은 함수 이름, 매개변수]
-    private Object[] preProcessing(String rawExpression) throws ErrorHandler {         
+    private Object[] preProcessing(String rawExpression) throws ErrorHandler {
         rawExpression = rawExpression.trim();
 
         if (rawExpression.length() > 200)
             throw new ErrorHandler(ErrorType.LENGTH_ERROR);
-            
+
         // 입력된 문자열의 타입
         ExpressionType expressionType = ExpressionType.MATHEMATICAL;
         Tuple resultPair = validationManager.checkExpressionType(rawExpression);
@@ -309,7 +324,7 @@ public class Calculator {
         ArrayList<String> paras = resultPair.third();
 
         // 대입 식이 아니면서
-        if (variableName != "") { 
+        if (variableName != "") {
             if (paras == null) { // 이 경우 변수 대입
                 expressionType = ExpressionType.VARIABLE;
             } else if (paras != null) { // 이 경우 함수를 대입
@@ -357,10 +372,12 @@ public class Calculator {
                     }
                     end++; // 닫는 괄호 다음 위치로 이동
                 } else {
-                    while (end < sb.length() && (Character.isDigit(sb.charAt(end)) || sb.charAt(end) == '.' || sb.charAt(end) == ' ' 
-                    || Character.isAlphabetic(sb.charAt(end)) || sb.charAt(end) == '$' || sb.charAt(end) == '_' || sb.charAt(end) == '%'
-                    || sb.charAt(end) == '@' || sb.charAt(end) == '[' || sb.charAt(end) == ']' || sb.charAt(end) == ','
-                    ) )  {
+                    while (end < sb.length()
+                            && (Character.isDigit(sb.charAt(end)) || sb.charAt(end) == '.' || sb.charAt(end) == ' '
+                                    || Character.isAlphabetic(sb.charAt(end)) || sb.charAt(end) == '$'
+                                    || sb.charAt(end) == '_' || sb.charAt(end) == '%'
+                                    || sb.charAt(end) == '@' || sb.charAt(end) == '[' || sb.charAt(end) == ']'
+                                    || sb.charAt(end) == ',')) {
                         end++;
                     }
                 }
@@ -383,10 +400,12 @@ public class Calculator {
                             closeParensCount++;
                     }
                 } else {
-                    while (start >= 0 && (Character.isDigit(sb.charAt(start)) || sb.charAt(start) == '.' || sb.charAt(start) == ' '  
-                     || Character.isAlphabetic(sb.charAt(start)) || sb.charAt(start) == '$' || sb.charAt(start) == '_' || sb.charAt(start) == '%'
-                     || sb.charAt(start) == '@' || sb.charAt(start) == '[' || sb.charAt(start) == ']' || sb.charAt(start) == ','
-                     )) {
+                    while (start >= 0 && (Character.isDigit(sb.charAt(start)) || sb.charAt(start) == '.'
+                            || sb.charAt(start) == ' '
+                            || Character.isAlphabetic(sb.charAt(start)) || sb.charAt(start) == '$'
+                            || sb.charAt(start) == '_' || sb.charAt(start) == '%'
+                            || sb.charAt(start) == '@' || sb.charAt(start) == '[' || sb.charAt(start) == ']'
+                            || sb.charAt(start) == ',')) {
                         start--;
                     }
                 }
