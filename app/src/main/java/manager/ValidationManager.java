@@ -182,7 +182,7 @@ public class ValidationManager {
 
         if (smallBracket.empty() && bigBracket.empty())
             return true;
-
+      
         return false;
     }
 

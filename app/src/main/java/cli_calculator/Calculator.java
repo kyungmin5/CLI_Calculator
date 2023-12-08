@@ -83,8 +83,12 @@ public class Calculator {
                         numBuilder.append(expression.charAt(i));
                         i++;
                     }
-                    double num = Double.parseDouble(numBuilder.toString());
-                    numbers.push(num * isOperandShouldMinus);
+                    try {
+                        double num = Double.parseDouble(numBuilder.toString());    
+                        numbers.push(num * isOperandShouldMinus);
+                    } catch  (NumberFormatException e) {
+                        throw new ErrorHandler(ErrorType.INVALID_OPERAND_ERROR);
+                    }
                     // 직전값 업데이트
                     // previousValue = num * isOperandShouldMinus;
                     isOperandShouldMinus = 1;
@@ -310,7 +314,7 @@ public class Calculator {
                 expressionType = ExpressionType.FUNCTION;
             }
         }
-
+      
         if(!validationManager.checkBracketPair(expression))
         {
             throw new ErrorHandler(ErrorType.BRACKET_ERROR); 
