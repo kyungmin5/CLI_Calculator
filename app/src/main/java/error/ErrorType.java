@@ -13,6 +13,7 @@ public enum ErrorType {
   INVALID_EXPRESSION_ERROR, // 올바르지 않은 수식
   INVALID_EXPRESSION_TYPE_ERROR, // 올바르지 않은 수식
   INVALID_PREVIOUS_VALUE_ERROR, // 직전값 null 오류
+  INVALID_CHARACTER_ERROR, // 유효하지 않은 문자
   // Result Error
   VALUE_OUT_OF_BOUND_ERROR,  // 유효한 결과 범위 초과
 

@@ -35,7 +35,7 @@ public class Calculator {
         String variableName = (String) RESULT[2];
 
         double result = 0;
- 
+
         switch (expressionType) {
             case MATHEMATICAL: // 대입식이 아닌 경우
                 result = recursiveCaluculate(expression);
@@ -203,6 +203,8 @@ public class Calculator {
                     // '_'를 만날 때 직전값을 스택에 push
                     numbers.push(previousValue * isOperandShouldMinus);
                     isOperandShouldMinus = 1;
+                } else {
+                    throw new ErrorHandler(ErrorType.INVALID_CHARACTER_ERROR);
                 }
             }
 
