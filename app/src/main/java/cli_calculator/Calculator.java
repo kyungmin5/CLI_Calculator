@@ -314,9 +314,10 @@ public class Calculator {
                 expressionType = ExpressionType.FUNCTION;
             }
         }
-
-        if (!validationManager.checkBracketPair(expression)) {
-            throw new ErrorHandler(ErrorType.BRACKET_ERROR);
+      
+        if(!validationManager.checkBracketPair(expression))
+        {
+            throw new ErrorHandler(ErrorType.BRACKET_ERROR); 
         }
         expression = optimizeForPower(expression);
 
